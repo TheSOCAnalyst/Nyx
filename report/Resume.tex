@@ -1,0 +1,250 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{geometry}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, calc}
+\usepackage{helvet}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{enumitem}
+\usepackage{lmodern}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{caption}
+\usepackage{listings}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+% Géométrie globale
+\geometry{
+    a4paper,
+    top=1.5cm,
+    bottom=1.5cm,
+    left=1.5cm,
+    right=1.5cm,
+    heightrounded
+}
+
+% Couleurs personnalisées (identiques à votre document)
+\definecolor{mainblue}{RGB}{0,70,127}
+\definecolor{accentgold}{RGB}{179,149,0}
+
+% Configuration hyperliens
+\hypersetup{colorlinks=true, linkcolor=mainblue, urlcolor=mainblue}
+
+% --- En-tête et pied de page (pour les pages après la garde) ---
+\fancypagestyle{synthstyle}{
+    \fancyhf{}
+    \fancyhead[L]{\textcolor{mainblue}{\textbf{Mini-SOC à empreinte réduite – Document de cadrage}}}
+    \fancyhead[R]{\textcolor{mainblue}{\textbf{Mars 2026}}}
+    \fancyfoot[C]{\textcolor{gray}{\thepage\ / \pageref{LastPage}}}
+    \renewcommand{\headrulewidth}{0.5pt}
+    \renewcommand{\headrule}{\hbox to\headwidth{\color{mainblue}\leaders\hrule height \headrulewidth\hfill}}
+}
+
+\begin{document}
+
+% ======================================================================
+%                         PAGE DE GARDE
+% ======================================================================
+\begin{titlepage}
+\newgeometry{top=2cm, bottom=2cm, left=2cm, right=2cm, heightrounded}
+
+% Cadre décoratif (identique à votre exemple)
+\begin{tikzpicture}[remember picture, overlay]
+    \draw[line width=2pt, color=mainblue!80, rounded corners=10mm]
+        ([xshift=5mm,yshift=-5mm] current page.north west) --
+        ([xshift=-5mm,yshift=-5mm] current page.north east) --
+        ([xshift=-5mm,yshift=5mm] current page.south east) --
+        ([xshift=5mm,yshift=5mm] current page.south west) -- cycle;
+    
+    \draw[line width=1pt, color=accentgold, dashed]
+        ([xshift=8mm,yshift=-8mm] current page.north west) --
+        ([xshift=-8mm,yshift=-8mm] current page.north east) --
+        ([xshift=-8mm,yshift=8mm] current page.south east) --
+        ([xshift=8mm,yshift=8mm] current page.south west) -- cycle;
+\end{tikzpicture}
+
+% Logos en haut
+% Remplacez "logo-gauche.jpg" et "logo-droite.jpg" par vos propres fichiers.
+% Si vous n'avez qu'un seul logo, supprimez le bloc de droite ou centrez-le.
+\vspace*{-1cm}
+\begin{minipage}{0.4\textwidth}
+    \flushleft
+    \includegraphics[width=5cm]{universite.jpg}   % <-- adaptez le chemin
+\end{minipage}
+\hfill
+\begin{minipage}{0.4\textwidth}
+    \flushright
+    \includegraphics[width=5cm]{ecole-polytechnique.jpg}  % <-- adaptez le chemin
+\end{minipage}
+
+\vspace{1.5cm}
+
+% Titre principal
+\begin{center}
+\begin{tikzpicture}
+    \node[draw=mainblue, fill=mainblue!5, rounded corners=5mm, 
+          text width=0.9\textwidth, align=center, inner sep=10pt, 
+          line width=1pt] {
+        \fontsize{20}{24}\selectfont\textbf{\textcolor{mainblue}{PROJET DE REMPLACEMENT DE STAGE}} \\[0.3cm]
+        \fontsize{16}{20}\selectfont\textbf{\textcolor{mainblue}{Conception d’un Mini-SOC à empreinte réduite}} \\[0.1cm]
+        \fontsize{16}{20}\selectfont\textbf{\textcolor{mainblue}{pour PME Togolaises}} \\[0.4cm]
+        \fontsize{12}{14}\selectfont\textcolor{mainblue}{\textit{Moteur de corrélation stateful en Python}} \\
+        \fontsize{12}{14}\selectfont\textcolor{mainblue}{\textit{et évaluation comparative avec Wazuh}}
+    };
+\end{tikzpicture}
+
+\vspace{1cm}
+{\Large \textbf{Année Académique 2025-2026}}
+\end{center}
+
+\vspace{1.5cm}
+
+% Informations personnelles et encadrement
+\noindent
+\begin{minipage}{0.48\textwidth}
+    \begin{flushleft}
+        \large \textbf{\underline{Auteur}}: \\[0.4cm]
+        \begin{itemize}[leftmargin=*, itemsep=0.2cm]
+            \item[\textcolor{accentgold}{\large$\bullet$}] \textbf{KPODONOU K. Gaël} \\
+            \textit{L3 Informatique et Systèmes} \\
+            %\textit{École Polytechnique de Lomé}
+        \end{itemize}
+    \end{flushleft}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+    \begin{flushright}
+        \large \textbf{\underline{Encadrement :}} \\[0.4cm]
+        \textbf{Directeur accompagnateur :} \\[0.2cm]
+        \makebox[5cm]{\dotfill} \\[0.3cm]
+        \textbf{Matière / UE :} \\[0.2cm]
+        \makebox[5cm]{\dotfill}
+    \end{flushright}
+\end{minipage}
+
+\vspace{1cm}
+\begin{center}
+    \textcolor{gray}{\rule{0.8\textwidth}{0.5pt}} \\[0.2cm]
+    \small\textit{École Polytechnique de Lomé} \\
+    \small\textit{Université de Lomé}
+\end{center}
+\end{titlepage}
+
+% ======================================================================
+%                  FIN DE LA PAGE DE GARDE
+% ======================================================================
+
+% Retour à la géométrie précédente et activation du style "synthstyle"
+\restoregeometry
+\pagestyle{synthstyle}
+\setcounter{page}{1}   % les pages de synthèse débutent à 1
+
+% ===== PAGE 1 DE SYNTHÈSE =====
+
+\section*{\textcolor{mainblue}{1. Contexte et problématique}}
+Le Togo, en progression dans l'indice mondial de cybersécurité (UIT, 2024), dispose d'une Agence Nationale de Cybersécurité (ANCy) mais d'un tissu de PME aux budgets très limités. Une licence Splunk dépasse 10~000~\$/an, un EDR professionnel coûte 50--150~\$/poste/an, des montants structurellement incompatibles avec les capacités locales. Parallèlement, on constate une pénurie de compétences opérationnelles et une faible couverture des menaces propres à l'Afrique de l'Ouest (phishing SMS/WhatsApp, fraude Mobile Money, ransomwares sur Windows non patchés).
+
+\textbf{Question centrale :} Est-il possible de construire un système de détection d'intrusion \textit{stateful}, capable d'identifier des chaînes d'attaques complexes, avec des contraintes matérielles compatibles avec les PME togolaises ($\le 8$~Go RAM, coût logiciel nul), et dont les performances de détection sont comparables à celles de Wazuh sur les mêmes scénarios~?
+
+\section*{\textcolor{mainblue}{2. Hypothèses de travail}}
+\begin{enumerate}[leftmargin=*, itemsep=0.15cm]
+    \item[\textbf{H1.}] \textbf{Équivalence de détection} -- Taux de vrais positifs (TPR) $\ge 90\%$, taux de faux positifs (FPR) $\le 10\%$, sans différence significative avec Wazuh.
+    \item[\textbf{H2.}] \textbf{Supériorité en ressources} -- Consommation RAM $< 4$~Go en charge, latence de détection $< 3\,000$~ms.
+    \item[\textbf{H3.}] \textbf{Adaptabilité locale} -- Règles de corrélation modifiables par un développeur Python intermédiaire, sans expertise SIEM.
+\end{enumerate}
+
+\section*{\textcolor{mainblue}{3. Architecture résumée}}
+\vspace{-0.2cm}
+\begin{center}
+\begin{tikzpicture}[node distance=1.2cm and 1cm,
+    block/.style={rectangle, draw=mainblue, fill=mainblue!5, text width=2.8cm, 
+                  align=center, minimum height=0.8cm, rounded corners=3pt, font=\small},
+    arrow/.style={-{Stealth[scale=0.8]}, mainblue, thick}]
+
+\node (sources) [block] {Sources de logs (SSH, firewall, serveurs)};
+\node (collect) [block, right=of sources] {Collecteur /\\ Normaliseur (JSON/ECS)};
+\node (engine)  [block, right=of collect] {Moteur Python\\ stateful\\ (règles YAML)};
+\node (alert)   [block, right=of engine] {Alertes\\ (fichier/API)};
+\node (wazuh)   [block, below=0.8cm of engine, fill=accentgold!10, draw=accentgold] {Benchmark\\ Wazuh Manager\\ + Indexer};
+
+\draw [arrow] (sources) -- (collect);
+\draw [arrow] (collect) -- (engine);
+\draw [arrow] (engine) -- (alert);
+\draw [arrow, dashed, accentgold] (engine.south) -- node[sloped, above, font=\footnotesize] {mêmes scénarios} (wazuh.north);
+\end{tikzpicture}
+\end{center}
+\vspace{-0.2cm}
+Le laboratoire est entièrement virtualisé (VMs OPNsense/Debian/Kali, conteneurs Docker pour waeuh) et isolé du réseau physique. La mémoire totale du lab n'excède pas 3,5~Go pour les phases de développement, 7,5~Go lors du benchmark Wazuh, laissant une marge confortable sur un hôte à 16~Go.
+
+% ===== PAGE 2 DE SYNTHÈSE =====
+\newpage
+
+\section*{\textcolor{mainblue}{4. Scénarios d'attaque retenus}}
+\begin{table}[H]
+\centering
+\begin{tabular}{p{0.3\textwidth} p{0.65\textwidth}}
+\toprule
+\multicolumn{1}{c}{\textbf{Scénario}} & \multicolumn{1}{c}{\textbf{Règle de corrélation (résumé naturel)}} \\
+\midrule
+\textbf{1 -- Brute-force SSH} & Détection d'au moins 10 échecs SSH depuis une même IP en 60~s, suivis d'une connexion réussie depuis la même IP dans les 120~s. \\
+\textbf{2 -- Reconnaissance + Exfiltration} & Scan réseau vers $\ge 20$ hôtes en 30~s depuis une IP interne, puis transfert sortant $\ge 10$~Mo vers une IP externe dans les 300~s. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section*{\textcolor{mainblue}{5. Métriques d'évaluation (objectifs de conception)}}
+\begin{table}[H]
+\centering
+\begin{tabular}{l c c}
+\toprule
+\textbf{Métrique} & \textbf{Cible moteur Python} & \textbf{Comparaison Wazuh} \\
+\midrule
+TPR (sensibilité)      & $\ge 90\%$             & À mesurer (objectif H1) \\
+FPR                    & $\le 10\%$             & À mesurer (objectif H1) \\
+Latence de détection   & $< 3\,000$~ms          & À mesurer (objectif H2) \\
+RAM en charge          & $< 4$~Go               & À mesurer (objectif H2) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section*{\textcolor{mainblue}{6. Planning macro (10 semaines)}}
+\begin{center}
+\small
+\begin{tikzpicture}
+    \draw[mainblue, line width=2pt] (0,0) -- (10,0);
+    \foreach \x/\text in {0/S1-3, 3.33/S4-7, 6.66/S8-10} {
+        \draw[mainblue] (\x,0.1) -- (\x,-0.1) node[below, font=\footnotesize] {\text};
+    }
+    \node[above, font=\footnotesize\bfseries, align=left] at (1.66,0.2) {Infrastructure\\ \& collecte};
+    \node[above, font=\footnotesize\bfseries, align=left] at (5.0,0.2) {Moteur, scénarios\\ \& métriques};
+    \node[above, font=\footnotesize\bfseries, align=left] at (8.33,0.2) {Benchmark Wazuh\\ \& analyse};
+\end{tikzpicture}
+\end{center}
+\vspace{-0.2cm}
+Semaines 1--3 : topologie, IaC, pipeline de logs, isolation du dataset d'évaluation. Semaines 4--7 : moteur Python, tests unitaires, simulation des deux scénarios, premières mesures. Semaines 8--10 : déploiement Wazuh, benchmark sur le dataset isolé, analyse comparative et soutenance.
+
+\section*{\textcolor{mainblue}{7. Impact local et perspectives}}
+\begin{itemize}[leftmargin=*, itemsep=0.15cm]
+    \item \textbf{Coût logiciel nul} : stack 100\% open-source (Python, Docker, OPNSense, Wazuh), compatible matériel de seconde main.
+    \item \textbf{Alignement national} : projet en phase avec la Stratégie Nationale de Cybersécurité du Togo 2024--2028.
+    \item \textbf{Règles contextualisables} : possibilité d'étendre la détection à d'autres menaces locales (fraude Mobile Money, phishing WhatsApp).
+    %\item \textbf{Perspectives} : collaboration ANCy, déploiement pilote à l'EPL, contribution à un référentiel de règles de détection pour l'Afrique de l'Ouest.
+\end{itemize}
+
+\vfill
+\begin{center}
+\textcolor{gray}{\rule{0.8\textwidth}{0.5pt}} \\[0.2cm]
+\footnotesize\textit{Rapport complet de 16 pages (architecture, benchmark) disponible pour la réunion de cadrage.} \\
+\footnotesize Dépôt Git : Le dépôt gitlab officiel du projet ici -- \texttt{https://gitlab.com/AdrienStuart/nyx/-/blob/master/docs/mini-soc-rapport.pdf} 
+\end{center}
+
+\end{document}

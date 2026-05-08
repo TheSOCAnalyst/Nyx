@@ -1,0 +1,1481 @@
+\documentclass[12pt,a4paper]{article}
+
+% ─── Packages ───────────────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{mdframed}
+\usepackage{tabularx}
+
+\geometry{
+  top=2.5cm, bottom=2.5cm,
+  left=2.5cm, right=2.5cm,
+  headheight=15pt
+}
+
+% ─── Couleurs ────────────────────────────────────────────────────────────────
+\definecolor{sambablue}{RGB}{0,82,156}
+\definecolor{codebg}{RGB}{245,245,245}
+\definecolor{codeframe}{RGB}{180,180,180}
+\definecolor{alertred}{RGB}{180,0,0}
+\definecolor{successgreen}{RGB}{0,130,0}
+\definecolor{voipblue}{RGB}{0,90,160}
+\definecolor{explainyellow}{RGB}{255,250,220}
+\definecolor{explainframe}{RGB}{180,140,0}
+
+% ─── Style des listings ──────────────────────────────────────────────────────
+\lstdefinestyle{terminal}{
+  backgroundcolor=\color{black},
+  basicstyle=\ttfamily\small\color{white},
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{gray},
+  xleftmargin=6pt,
+  xrightmargin=6pt,
+  aboveskip=8pt,
+  belowskip=8pt,
+}
+
+\lstdefinestyle{config}{
+  backgroundcolor=\color{codebg},
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{sambablue}\bfseries,
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{alertred},
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{codeframe},
+  xleftmargin=6pt,
+  xrightmargin=6pt,
+  aboveskip=8pt,
+  belowskip=8pt,
+  showstringspaces=false,
+}
+
+% ─── Boîtes colorées ─────────────────────────────────────────────────────────
+\tcbuselibrary{skins,breakable}
+
+\newtcolorbox{infobox}[1][]{
+  colback=blue!5!white, colframe=sambablue,
+  fonttitle=\bfseries, title=#1,
+  breakable
+}
+\newtcolorbox{successbox}[1][]{
+  colback=green!5!white, colframe=successgreen,
+  fonttitle=\bfseries, title=#1,
+  breakable
+}
+\newtcolorbox{warningbox}[1][]{
+  colback=orange!8!white, colframe=orange!80!black,
+  fonttitle=\bfseries, title=#1,
+  breakable
+}
+\newtcolorbox{explainbox}[1][]{
+  colback=explainyellow, colframe=explainframe,
+  fonttitle=\bfseries\color{explainframe}, title=#1,
+  breakable
+}
+
+% ─── En-têtes / pieds de page ────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Projet Final -- Serveur Samba PME}
+\fancyhead[R]{\small \nouppercase{\leftmark}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ─── Titre des sections ──────────────────────────────────────────────────────
+\titleformat{\section}
+  {\Large\bfseries\color{sambablue}}{\thesection}{1em}{}[\titlerule]
+\titleformat{\subsection}
+  {\large\bfseries\color{sambablue!80!black}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\normalsize\bfseries}{\thesubsubsection}{1em}{}
+
+% ─── Liens hypertexte ────────────────────────────────────────────────────────
+\hypersetup{
+  colorlinks=true,
+  linkcolor=sambablue,
+  urlcolor=sambablue,
+  citecolor=sambablue,
+  pdftitle={Rapport Serveur Samba PME},
+  pdfauthor={KPODONOU Kossigan Gael God-Love},
+}
+
+% ════════════════════════════════════════════════════════════════════════════
+\begin{document}
+
+% ─── PAGE DE TITRE ───────────────────────────────────────────────────────────
+\begin{titlepage}
+  \newgeometry{margin=2cm}
+
+  % LOGOS en haut à gauche et à droite (positionnement absolu)
+  \begin{tikzpicture}[remember picture, overlay]
+    % Logo gauche
+    \node[anchor=north west, xshift=1cm, yshift=-1cm] 
+      at (current page.north west) {\includegraphics[width=5.5cm]{WhatsApp Image 2025-01-06 à 00.28.20_4ed6a7f1.jpg}};
+    % Logo droit
+    \node[anchor=north east, xshift=-1cm, yshift=-1cm] 
+      at (current page.north east) {\includegraphics[width=5.5cm]{ecole_polytechnique.jpg}};
+  \end{tikzpicture}
+
+  \vspace*{4cm} 
+
+  \vspace{2.5cm}
+
+  \begin{tcolorbox}[
+    colback=white, colframe=sambablue,
+    boxrule=1.4pt, arc=5pt,
+    left=22pt, right=22pt,
+    top=16pt, bottom=16pt,
+    width=\textwidth
+  ]
+    \centering
+    {\LARGE\bfseries\color{voipblue} RAPPORT DE PROJET FINAL}\\[14pt]
+    {\fontsize{19}{23}\selectfont\bfseries
+      Mise en place d'un serveur\\[6pt]
+      de fichiers Samba en PME}
+  \end{tcolorbox}
+
+  \vspace{3.5cm}
+
+  \begin{tabular}{rl}
+    \textbf{Auteur1}         & : KPODONOU Kossigan Gael God-Love \\[8pt]
+    \textbf{Auteur2}         & : GNIGMA Bruno \\[8pt]
+    \textbf{Professeur}     & : Dr. DJEKI \\[8pt]
+    \textbf{Matière}        & : Généralités sur les Stockages de l'information (INF 1527)\\[8pt]
+    \textbf{Année scolaire} & : 2025--2026 \\
+  \end{tabular}
+
+  \vfill
+  
+\end{titlepage}
+
+% ─── TABLE DES MATIÈRES ──────────────────────────────────────────────────────
+\tableofcontents
+\newpage
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Introduction et objectifs}
+
+Dans un contexte où la gestion centralisée des données est devenue indispensable pour toute
+organisation, les PME font face à des défis croissants en matière de partage de fichiers, de
+contrôle d'accès et de sécurité informatique. Ce projet a pour objet la conception et le
+déploiement d'un serveur de fichiers \textbf{Samba} pour une PME fictive comptant quatre
+services~: Direction, Comptabilité, Ressources Humaines et Technique.
+
+\subsection*{Objectifs}
+
+\begin{itemize}[leftmargin=2em]
+  \item Centraliser les données de l'entreprise sur un serveur Linux sous Ubuntu Server~;
+  \item Créer des espaces de stockage dédiés par service avec des droits d'accès stricts~;
+  \item Sécuriser les communications en désactivant SMBv1 et en imposant SMB2/SMB3~;
+  \item Protéger le serveur contre les attaques courantes (brute force, énumération anonyme)~;
+  \item Mettre en place une stratégie de sauvegarde automatisée avec procédure de restauration testée~;
+  \item Documenter l'intégralité de la démarche dans ce rapport.
+\end{itemize}
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Recherche théorique}
+
+\subsection{Qu'est-ce que Samba~?}
+
+Samba est une implémentation libre et open-source du protocole \textbf{SMB/CIFS}
+(\textit{Server Message Block / Common Internet File System}) pour les systèmes Unix/Linux.
+Il permet à des machines Linux de partager des fichiers, des imprimantes et d'autres ressources
+avec des clients Windows, macOS ou Linux sur un réseau local. Développé initialement par
+Andrew Tridgell en 1992 par rétro-ingénierie du protocole SMB, Samba est aujourd'hui
+maintenu par une large communauté open-source et constitue la solution de référence pour
+l'interopérabilité Linux/Windows en entreprise.
+
+Samba est composé de plusieurs démons~:
+\begin{itemize}[leftmargin=2em]
+  \item \texttt{smbd}~: gère les partages de fichiers, l'authentification des utilisateurs et
+    les impressions réseau. C'est le démon principal que l'on interagit au quotidien~;
+  \item \texttt{nmbd}~: gère la résolution de noms NetBIOS, permettant aux machines de
+    se trouver par nom sur le réseau local~;
+  \item \texttt{winbindd}~: permet l'intégration à un domaine Active Directory/LDAP,
+    utile pour les grands réseaux d'entreprise.
+\end{itemize}
+
+\subsection{Le protocole SMB et ses versions}
+
+Le protocole \textbf{SMB (Server Message Block)} est un protocole de couche application
+permettant le partage de ressources (fichiers, imprimantes, ports série) entre machines d'un
+réseau local. Initialement conçu par IBM et adopté par Microsoft, il a évolué de manière
+significative au fil des années.
+
+Dans l'ancien Windows NT~4, il était appelé \textbf{CIFS (Common Internet File System)}.
+La version~2 de SMB est apparue dans Vista, Windows~7 et Windows~8. Actuellement
+SMB est en version \textbf{3.1.1}, introduite dans Windows~10 et Windows Server~2016.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{lll}
+    \toprule
+    \textbf{Version} & \textbf{Systèmes concernés} & \textbf{Statut de sécurité} \\
+    \midrule
+    SMBv1 & Windows XP, Server 2003   & \textcolor{alertred}{\textbf{Obsolète -- à désactiver}} \\
+    SMBv2 & Windows Vista, Server 2008 & Acceptable \\
+    SMBv3 & Windows 8, Server 2012+   & \textcolor{successgreen}{\textbf{Recommandé}} \\
+    \bottomrule
+  \end{tabular}
+  \caption{Versions du protocole SMB}
+\end{table}
+
+\begin{warningbox}[Danger SMBv1 -- Vulnérabilité critique]
+SMBv1 est le protocole à l'origine des attaques \textit{WannaCry} (mai 2017) et
+\textit{NotPetya} (juin 2017), qui ont causé des milliards de dollars de dommages dans le
+monde entier, infectant des hôpitaux, des banques et des grandes entreprises. Sa
+désactivation est une \textbf{exigence absolue de sécurité} dans tout environnement
+professionnel.
+\end{warningbox}
+
+\subsection{Bonnes pratiques de sécurisation Samba}
+
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Désactiver SMBv1}~: utiliser \texttt{min protocol = SMB2} dans la
+    configuration globale pour forcer l'utilisation de protocoles modernes.
+  \item \textbf{Authentification par utilisateur}~: \texttt{security = user} impose un
+    login/mot de passe pour chaque connexion. C'est le mode opposé au mode ``share''
+    (accès sans authentification) qui est dépassé.
+  \item \textbf{Mots de passe robustes}~: chaque utilisateur doit avoir un mot de passe fort
+    (majuscule, chiffre, caractère spécial, longueur $\geq$ 10 caractères) pour résister
+    aux attaques par dictionnaire comme celle avec \texttt{rockyou.txt}.
+  \item \textbf{Principe du moindre privilège}~: chaque groupe accède \textit{uniquement} à
+    son dossier dédié. Un employé de la comptabilité ne doit pas pouvoir lire les fichiers RH.
+  \item \textbf{Interdire la navigation anonyme}~: \texttt{restrict anonymous = 2} empêche
+    un attaquant de lister les partages sans s'authentifier (énumération).
+  \item \textbf{Journalisation}~: activer les logs (niveau 2) pour tracer toutes les
+    connexions et tentatives d'accès. Indispensable en cas d'incident.
+  \item \textbf{Protection contre le brute force}~: déployer \texttt{fail2ban} pour bannir
+    automatiquement les IP suspectes après un nombre d'échecs configurable.
+  \item \textbf{Sauvegarde régulière}~: mettre en place des sauvegardes complètes et
+    incrémentielles automatisées, avec tests de restauration réguliers.
+\end{enumerate}
+
+\subsection{Permissions Linux et Samba}
+
+La sécurité d'un partage Samba repose sur \textbf{deux couches de permissions} qui
+s'appliquent simultanément et de manière indépendante~:
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Permissions Linux (POSIX)}~: définies via \texttt{chmod} et \texttt{chown}.
+    Ce sont les permissions du système de fichiers sous-jacent, appliquées par le noyau Linux
+    indépendamment de Samba.
+  \item \textbf{Permissions Samba}~: définies dans \texttt{smb.conf} via \texttt{valid users},
+    \texttt{read only}, \texttt{create mask}, etc.
+\end{itemize}
+
+\begin{infobox}[Règle des permissions effectives]
+La permission effective est le \textbf{plus restrictif} des deux niveaux. Un utilisateur qui
+a accès via Samba (\texttt{valid users}) mais dont le compte Linux n'a pas les droits sur
+le dossier se verra quand même refusé. Il est donc indispensable de configurer
+correctement \textit{les deux} niveaux.
+\end{infobox}
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Architecture et environnement}
+
+\subsection{Topologie du laboratoire}
+
+L'environnement de test a été mis en place sur VirtualBox installé sur un hôte physique
+fonctionnant sous Ubuntu Desktop. Trois machines constituent l'infrastructure~:
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{llll}
+    \toprule
+    \textbf{Rôle} & \textbf{Système} & \textbf{IP} & \textbf{Interface} \\
+    \midrule
+    Serveur Samba & Ubuntu Server 24.04 & 192.168.1.118 (Bridge)    & enp0s3 \\
+                  &                     & 192.168.56.20 (Host-Only) & enp0s8 \\
+    Client Linux  & Ubuntu Desktop (hôte) & 192.168.56.1            & vboxnet0 \\
+    Attaquant     & Kali Linux 2025.4   & 192.168.56.40             & eth1 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Inventaire des machines du laboratoire}
+\end{table}
+
+\subsection{Choix de la configuration réseau}
+
+Deux cartes réseau ont été configurées sur la VM serveur~:
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Carte 1 (Bridge -- enp0s3)}~: place la VM sur le même réseau physique que
+    la machine hôte. Permet l'accès à Internet pour l'installation des paquets
+    (\texttt{apt install}). Elle reçoit son IP via DHCP depuis la box domestique.
+  \item \textbf{Carte 2 (Host-Only -- enp0s8)}~: crée un réseau privé
+    \texttt{192.168.56.0/24} entre la VM, l'hôte et Kali. C'est sur cette interface que
+    transitent les connexions Samba et les tests de sécurité.
+\end{itemize}
+
+\begin{infobox}[Pourquoi Host-Only pour les tests Samba~?]
+Le réseau Host-Only isole le trafic de test du réseau physique, ce qui est une bonne
+pratique en laboratoire. Cela évite d'exposer le serveur (potentiellement non complètement
+sécurisé en phase de test) aux autres machines du réseau réel, et empêche tout risque de
+perturbation du réseau domestique par les attaques générées depuis Kali.
+\end{infobox}
+
+\subsubsection{Configuration réseau du serveur (netplan)}
+
+Ubuntu Server utilise \textbf{netplan} pour gérer les interfaces réseau. La configuration
+est déclarative (format YAML) et remplace les anciens fichiers \texttt{/etc/network/interfaces}.
+
+\begin{lstlisting}[style=config, caption={/etc/netplan/00-installer-config.yaml}]
+network:
+  version: 2
+  ethernets:
+    enp0s3:
+      dhcp4: true        # IP automatique via DHCP (acces internet)
+    enp0s8:
+      dhcp4: no          # Pas de DHCP : IP statique
+      addresses:
+        - 192.168.56.20/24  # IP fixe sur le reseau Host-Only
+\end{lstlisting}
+
+\begin{explainbox}[Explication~: \texttt{netplan apply}]
+Après toute modification du fichier YAML, la commande \texttt{sudo netplan apply}
+recharge la configuration réseau sans redémarrer la machine. Si l'interface reste en état
+\texttt{NO-CARRIER}, vérifier que la case \textit{Câble connecté} est cochée dans les
+paramètres VirtualBox de l'adaptateur réseau.
+\end{explainbox}
+
+\subsection{Organisation des services et utilisateurs}
+
+Le projet impose la création d'au moins 8 utilisateurs répartis en 4 groupes correspondant
+aux services de la PME.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{lll}
+    \toprule
+    \textbf{Groupe Linux} & \textbf{Utilisateurs}      & \textbf{Dossier partage} \\
+    \midrule
+    \texttt{direction}    & direction1, direction2     & \texttt{/srv/samba/direction} \\
+    \texttt{comptabilite} & compta1, compta2            & \texttt{/srv/samba/comptabilite} \\
+    \texttt{rh}           & rh1, rh2                    & \texttt{/srv/samba/rh} \\
+    \texttt{technique}    & tech1, tech2                & \texttt{/srv/samba/technique} \\
+    \textit{(tous)}       & tous les groupes            & \texttt{/srv/samba/commun} \\
+    \bottomrule
+  \end{tabular}
+  \caption{Organisation des groupes, utilisateurs et partages}
+\end{table}
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Installation et configuration}
+
+\subsection{Installation de Samba}
+
+Après mise à jour du système, Samba est installé via le gestionnaire de paquets~:
+
+\begin{lstlisting}[style=terminal]
+sudo apt update && sudo apt install samba -y
+samba --version
+sudo systemctl status smbd
+\end{lstlisting}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=1\textwidth]{samba_actif.png}
+  \caption{Samba 4.19.5 installé et service \texttt{smbd} actif -- statut \texttt{active (running)}}
+\end{figure}
+
+\begin{explainbox}[Explication~: \texttt{sudo apt update \&\& sudo apt install samba -y}]
+\begin{itemize}[leftmargin=1.5em,topsep=2pt]
+  \item \texttt{sudo}~: exécute la commande avec les privilèges administrateur (root).
+  \item \texttt{apt update}~: met à jour la liste des paquets disponibles depuis les dépôts
+    officiels. Ne met PAS à jour les paquets installés -- seulement la liste.
+  \item \texttt{\&\&}~: enchaîne la commande suivante \textit{uniquement} si la précédente
+    a réussi (code de retour 0).
+  \item \texttt{apt install samba -y}~: installe le paquet \texttt{samba} et ses dépendances.
+    Le \texttt{-y} répond automatiquement ``oui'' aux questions de confirmation.
+\end{itemize}
+\end{explainbox}
+
+\subsection{Création de la structure des dossiers}
+
+\begin{lstlisting}[style=terminal]
+sudo mkdir -p /srv/samba/direction
+sudo mkdir -p /srv/samba/comptabilite
+sudo mkdir -p /srv/samba/rh
+sudo mkdir -p /srv/samba/technique
+sudo mkdir -p /srv/samba/commun
+\end{lstlisting}
+
+\begin{explainbox}[Explication~: \texttt{mkdir -p}]
+\begin{itemize}[leftmargin=1.5em,topsep=2pt]
+  \item \texttt{mkdir}~: crée un répertoire (\textit{make directory}).
+  \item \texttt{-p}~: crée les répertoires parents manquants sans erreur. Ici, si
+    \texttt{/srv/samba/} n'existe pas encore, il sera créé automatiquement avant
+    \texttt{direction/}. Sans \texttt{-p}, la commande échouerait si le parent n'existe pas.
+  \item \texttt{/srv/samba/}~: chemin standardisé FHS (Filesystem Hierarchy Standard)
+    pour les données de services. \texttt{/srv} est prévu pour les données servies par le
+    système.
+\end{itemize}
+\end{explainbox}
+
+\subsection{Création des groupes et utilisateurs}
+
+\subsubsection{Création des groupes Linux}
+
+\begin{lstlisting}[style=terminal]
+sudo groupadd direction
+sudo groupadd comptabilite
+sudo groupadd rh
+sudo groupadd technique
+\end{lstlisting}
+
+\begin{explainbox}[Explication~: \texttt{groupadd}]
+\begin{itemize}[leftmargin=1.5em,topsep=2pt]
+  \item \texttt{groupadd}~: crée un nouveau groupe dans le fichier \texttt{/etc/group}.
+  \item Chaque groupe se voit attribuer un \textbf{GID} (Group IDentifier) unique,
+    automatiquement incrémenté à partir de 1000 pour les groupes système non-root.
+  \item Les groupes Linux sont le mécanisme fondamental de contrôle d'accès. Un fichier
+    appartenant au groupe \texttt{direction} n'est accessible qu'aux membres de ce groupe
+    (si les permissions le définissent ainsi).
+  \item Vérification~: \texttt{cat /etc/group | grep direction} pour voir le GID attribué.
+\end{itemize}
+\end{explainbox}
+
+\subsubsection{Création des utilisateurs Linux et Samba}
+
+Chaque utilisateur est créé avec son groupe principal, un mot de passe Linux
+(\texttt{passwd}), puis enregistré dans la base Samba (\texttt{smbpasswd})~:
+
+\begin{lstlisting}[style=terminal]
+sudo useradd -m -G direction direction1
+sudo useradd -m -G direction direction2
+sudo useradd -m -G comptabilite compta1
+sudo useradd -m -G comptabilite compta2
+sudo useradd -m -G rh rh1
+sudo useradd -m -G rh rh2
+sudo useradd -m -G technique tech1
+sudo useradd -m -G technique tech2
+
+# Mot de passe Linux (exemple pour direction1)
+sudo passwd direction1   # ex: Direction1/+2026
+
+# Enregistrement dans la base Samba
+sudo smbpasswd -a direction1
+# Repeter pour chaque utilisateur
+\end{lstlisting}
+
+\begin{explainbox}[Explication~: \texttt{useradd -m -G <groupe> <nom>}]
+\begin{itemize}[leftmargin=1.5em,topsep=2pt]
+  \item \texttt{useradd}~: crée un nouvel utilisateur dans \texttt{/etc/passwd} et
+    \texttt{/etc/shadow}.
+  \item \texttt{-m}~: crée le répertoire personnel \texttt{/home/direction1/} de l'utilisateur.
+    Sans \texttt{-m}, aucun home n'est créé, ce qui peut causer des problèmes de connexion.
+  \item \texttt{-G direction}~: ajoute l'utilisateur au groupe supplémentaire \texttt{direction}.
+    Distinction importante~: le groupe \textit{principal} (défini par \texttt{-g}) est celui
+    par défaut lors de la création de fichiers~; les groupes \textit{supplémentaires}
+    (définis par \texttt{-G}) donnent des droits d'accès additionnels.
+  \item \texttt{sudo passwd direction1}~: définit le mot de passe du compte Linux. Ce mot
+    de passe est stocké (haché) dans \texttt{/etc/shadow}.
+\end{itemize}
+\end{explainbox}
+
+\begin{infobox}[Deux bases de mots de passe indépendantes]
+Samba maintient sa \textbf{propre base de mots de passe} dans
+\texttt{/var/lib/samba/private/passdb.tdb}, totalement indépendante du système Linux
+(\texttt{/etc/shadow}). La commande \texttt{smbpasswd -a <user>} enregistre l'utilisateur
+dans cette base Samba. Un utilisateur peut avoir un mot de passe Linux différent de son
+mot de passe Samba. Pour simplifier l'administration en laboratoire, les mêmes mots de
+passe ont été utilisés dans les deux bases.
+\end{infobox}
+
+\subsection{Application des permissions sur les dossiers}
+
+\begin{lstlisting}[style=terminal]
+# Etape 1 : Changer le proprietaire (groupe) de chaque dossier
+sudo chown root:direction    /srv/samba/direction
+sudo chown root:comptabilite /srv/samba/comptabilite
+sudo chown root:rh           /srv/samba/rh
+sudo chown root:technique    /srv/samba/technique
+sudo chown root:root         /srv/samba/commun
+
+# Etape 2 : Appliquer les permissions
+sudo chmod 2770 /srv/samba/direction
+sudo chmod 2770 /srv/samba/comptabilite
+sudo chmod 2770 /srv/samba/rh
+sudo chmod 2770 /srv/samba/technique
+sudo chmod 2777 /srv/samba/commun
+\end{lstlisting}
+
+\begin{explainbox}[Explication détaillée~: \texttt{chown root:direction /srv/samba/direction}]
+\begin{itemize}[leftmargin=1.5em,topsep=2pt]
+  \item \texttt{chown}~: change le propriétaire (\textit{change owner}) d'un fichier ou
+    répertoire.
+  \item Syntaxe~: \texttt{chown <utilisateur>:<groupe> <cible>}
+  \item \texttt{root:direction}~: le propriétaire est \texttt{root} (seul l'admin peut
+    modifier les permissions globales), et le groupe propriétaire est \texttt{direction}
+    (les membres de ce groupe auront les droits définis pour le groupe).
+  \item Cela signifie~: \textit{ce dossier appartient à root mais est administré par le
+    groupe direction}.
+\end{itemize}
+\end{explainbox}
+
+\begin{explainbox}[Explication détaillée~: \texttt{chmod 2770} et \texttt{chmod 2777}]
+Les permissions Linux s'expriment en octal sur 4 chiffres~:
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+  \hline
+  \textbf{Bit spécial} & \textbf{Propriétaire} & \textbf{Groupe} & \textbf{Autres} \\
+  \hline
+  2 (setgid) & 7 (rwx) & 7 (rwx) & 0 (---) \\
+  \hline
+\end{tabular}
+\end{center}
+
+\vspace{6pt}
+\begin{itemize}[leftmargin=1.5em,topsep=2pt]
+  \item \textbf{Valeur 7 = rwx}~: r (read=4) + w (write=2) + x (execute=1) = 7.
+    Accès complet~: lecture, écriture, navigation.
+  \item \textbf{Valeur 0 = ---}~: aucun droit. Les \textit{autres} (utilisateurs hors
+    propriétaire et hors groupe) ne peuvent rien faire.
+  \item \textbf{Bit setgid (2 en tête)}~: quand un utilisateur crée un fichier dans ce
+    dossier, le fichier hérite automatiquement du \textbf{groupe du dossier}
+    (ex.~\texttt{direction}) et non du groupe principal de l'utilisateur. Cela garantit
+    que tous les fichiers créés restent accessibles à tout le groupe.
+  \item \textbf{chmod 2777} (dossier commun)~: tout le monde (propriétaire, groupe, autres)
+    a tous les droits. Avec le setgid, les nouveaux fichiers appartiennent au groupe du
+    dossier. Cela permet à tous les employés (tous groupes confondus) de partager des
+    fichiers dans l'espace commun.
+  \item \textbf{Résumé visuel}~:
+    \begin{itemize}[leftmargin=1.5em]
+      \item \texttt{2770} $\rightarrow$ \texttt{drwxrws---}~: accès total groupe, zéro pour les autres
+      \item \texttt{2777} $\rightarrow$ \texttt{drwxrwsrwx}~: accès total pour tous + setgid
+    \end{itemize}
+\end{itemize}
+\end{explainbox}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\textwidth]{permissions_dossiers.png}
+  \caption{Structure \texttt{/srv/samba/} -- permissions correctement appliquées.
+    On distingue clairement les groupes propriétaires (\texttt{direction},
+    \texttt{comptabilite}, \texttt{rh}, \texttt{technique}) et les permissions
+    \texttt{drwxrws---} (2770) et \texttt{drwxrwsrwx} (2777) pour \texttt{commun}.}
+\end{figure}
+
+\subsection{Configuration du fichier smb.conf}
+
+Le fichier de configuration principal est sauvegardé avant modification (bonne pratique
+indispensable)~:
+
+\begin{lstlisting}[style=terminal]
+sudo cp /etc/samba/smb.conf /etc/samba/smb.conf.bak
+sudo nano /etc/samba/smb.conf
+\end{lstlisting}
+
+\begin{lstlisting}[style=config, caption={/etc/samba/smb.conf -- configuration complète}]
+[global]
+   workgroup = WORKGROUP
+   server string = Serveur Samba PME
+   server role = standalone server
+
+   # === SECURITE ===
+   security = user          # Authentification par compte utilisateur
+   min protocol = SMB2      # Interdit SMBv1 (WannaCry, NotPetya)
+   max protocol = SMB3      # Limite au protocole moderne
+
+   # Interdit la navigation anonyme (enumeration des partages)
+   restrict anonymous = 2
+
+   # === LOGS ===
+   log file = /var/log/samba/log.%m  # Un fichier par machine cliente
+   max log size = 1000               # Taille max en Ko
+   logging = file
+   log level = 2                     # Niveau detaille (0=minimal, 10=max)
+
+[direction]
+   path = /srv/samba/direction
+   valid users = @direction   # @ = groupe Linux
+   read only = no             # Ecriture autorisee
+   browseable = yes
+   create mask = 0660         # Nouveaux fichiers : rw-rw----
+   directory mask = 2770      # Nouveaux dossiers : rwxrws---
+
+[comptabilite]
+   path = /srv/samba/comptabilite
+   valid users = @comptabilite
+   read only = no
+   browseable = yes
+   create mask = 0660
+   directory mask = 2770
+
+[rh]
+   path = /srv/samba/rh
+   valid users = @rh
+   read only = no
+   browseable = yes
+   create mask = 0660
+   directory mask = 2770
+
+[technique]
+   path = /srv/samba/technique
+   valid users = @technique
+   read only = no
+   browseable = yes
+   create mask = 0660
+   directory mask = 2770
+
+[commun]
+   path = /srv/samba/commun
+   valid users = @direction @comptabilite @rh @technique
+   read only = no
+   browseable = yes
+   create mask = 0666   # Fichiers lisibles/modifiables par tous
+   directory mask = 2777
+\end{lstlisting}
+
+\begin{explainbox}[Explication des directives clés de smb.conf]
+\begin{itemize}[leftmargin=1.5em,topsep=2pt]
+  \item \textbf{\texttt{security = user}}~: chaque connexion doit s'authentifier avec
+    un nom d'utilisateur et un mot de passe Samba. Mode opposé~: \texttt{security = share}
+    (accès sans mot de passe, dépassé et dangereux).
+  \item \textbf{\texttt{min protocol = SMB2}}~: force l'utilisation de SMB version 2 minimum.
+    Toute tentative de connexion en SMBv1 est rejetée.
+  \item \textbf{\texttt{restrict anonymous = 2}}~: niveau maximum de restriction anonyme.
+    Valeur 0 = pas de restriction, valeur 1 = restriction partielle, valeur 2 = aucun accès
+    anonyme du tout (énumération impossible).
+  \item \textbf{\texttt{valid users = @direction}}~: le \texttt{@} indique un groupe
+    Linux. Seuls les membres du groupe \texttt{direction} peuvent accéder à ce partage.
+    Sans \texttt{@}, ce serait un utilisateur individuel.
+  \item \textbf{\texttt{create mask = 0660}}~: masque de permissions pour les nouveaux
+    fichiers. \texttt{0660} = rw-rw---- (propriétaire et groupe peuvent lire/écrire,
+    les autres n'ont rien). Équivalent de \texttt{chmod 660} sur chaque nouveau fichier.
+  \item \textbf{\texttt{log.~\%m}}~: \texttt{\%m} est une variable Samba remplacée par le
+    nom NetBIOS ou l'adresse IP du client. Cela crée un fichier de log par machine
+    connectée, facilitant les investigations.
+\end{itemize}
+\end{explainbox}
+
+\subsubsection{Validation de la configuration}
+
+\begin{lstlisting}[style=terminal]
+testparm               # Verifie smb.conf sans redemarrer Samba
+sudo systemctl restart smbd  # Prend en compte les modifications
+\end{lstlisting}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\textwidth]{vrai_test_fichier.png}
+  \caption{\texttt{testparm} -- configuration valide. Le message
+    \texttt{Loaded services file OK} confirme l'absence d'erreur de syntaxe.
+    L'avertissement \texttt{Weak crypto is allowed by GnuTLS} est informatif
+    (compatibilité NTLMv2) et n'est pas bloquant.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\textwidth]{vrai_confirmation_reussie.png}
+  \caption{Résultat de \texttt{testparm} affichant le dump complet de la configuration --
+    on reconnaît les sections \texttt{[direction]}, \texttt{[comptabilite]},
+    \texttt{[rh]}, \texttt{[technique]}, \texttt{[commun]} avec leurs paramètres.
+    Service \texttt{smbd} ensuite redémarré avec succès.}
+\end{figure}
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Tests de validation des accès}
+
+\subsection{Test de connexion réussie -- partage \texttt{direction}}
+
+Depuis le PC hôte (client Linux), on utilise \texttt{smbclient} pour se connecter~:
+
+\begin{lstlisting}[style=terminal]
+smbclient //192.168.56.20/direction -U direction1
+\end{lstlisting}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=1\textwidth]{test_connexion_samba.png}
+  \caption{Première tentative avec SMB1 -- message \texttt{SMB1 disabled -- no workgroup
+    available} confirme que le serveur rejette correctement les connexions SMBv1.
+    C'est le comportement attendu de notre configuration \texttt{min protocol = SMB2}.}
+
+  \vspace{0.4cm}
+  \includegraphics[width=1\textwidth]{test_connexion_securite_reussi.png}
+  \caption{Connexion SMB2 réussie par \texttt{direction1}~: création du dossier
+    \texttt{test\_direction} visible via \texttt{ls}, suivi du test d'isolation
+    (\texttt{smbclient .../rh}) qui retourne \texttt{NT\_STATUS\_ACCESS\_DENIED}.
+    Les deux tests sont visibles dans la même capture.}
+  \label{fig:connexion_reussie}
+\end{figure}
+
+\subsection{Test de refus d'accès -- isolation des partages}
+
+On tente d'accéder au partage \texttt{rh} avec l'utilisateur \texttt{direction1} qui
+n'appartient pas au groupe \texttt{rh}~:
+
+\begin{lstlisting}[style=terminal]
+smbclient //192.168.56.20/rh -U direction1
+\end{lstlisting}
+
+\begin{successbox}[Résultat attendu -- isolation confirmée]
+\texttt{tree connect failed: NT\_STATUS\_ACCESS\_DENIED}\\[4pt]
+L'accès est bien refusé. Les partages sont correctement isolés entre les groupes.
+Ce résultat est visible dans la figure~\ref{fig:connexion_reussie} ci-dessus (dernière ligne
+de la capture).
+\end{successbox}
+
+\subsection{Test du partage commun -- accès multi-groupes}
+
+\textbf{Étape 1}~: \texttt{direction1} dépose un fichier dans le partage commun~:
+
+\begin{lstlisting}[style=terminal]
+# Creation du fichier sur la machine hote
+echo "Fichier de test PME" > /tmp/fichier_test.txt
+
+# Connexion au partage commun et upload
+smbclient //192.168.56.20/commun -U direction1
+smb: \> put /tmp/fichier_test.txt fichier_test.txt
+smb: \> ls
+\end{lstlisting}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\textwidth]{test_validation-1.png}
+  \caption{Upload du fichier \texttt{fichier\_test.txt} dans \texttt{/commun} par
+    \texttt{direction1}. Le listing \texttt{ls} confirme sa présence (taille 20 octets,
+    date de création visible).}
+\end{figure}
+
+\textbf{Étape 2}~: \texttt{compta1} (groupe différent) peut lire et télécharger ce fichier~:
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\textwidth]{fichier_test_accessible.png}
+  \caption{\texttt{compta1} se connecte à \texttt{/commun}, liste les fichiers et
+    télécharge \texttt{fichier\_test.txt} via \texttt{get}. Le fichier déposé par un membre
+    d'un groupe différent est bien accessible. Le partage commun est fonctionnel.}
+\end{figure}
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{lccccc}
+    \toprule
+    \textbf{Utilisateur} & \textbf{/direction} & \textbf{/comptabilite} & \textbf{/rh} & \textbf{/technique} & \textbf{/commun} \\
+    \midrule
+    direction1 & \textcolor{successgreen}{Oui} & \textcolor{alertred}{Non} & \textcolor{alertred}{Non} & \textcolor{alertred}{Non} & \textcolor{successgreen}{Oui} \\
+    compta1    & \textcolor{alertred}{Non} & \textcolor{successgreen}{Oui} & \textcolor{alertred}{Non} & \textcolor{alertred}{Non} & \textcolor{successgreen}{Oui} \\
+    rh1        & \textcolor{alertred}{Non} & \textcolor{alertred}{Non} & \textcolor{successgreen}{Oui} & \textcolor{alertred}{Non} & \textcolor{successgreen}{Oui} \\
+    tech1      & \textcolor{alertred}{Non} & \textcolor{alertred}{Non} & \textcolor{alertred}{Non} & \textcolor{successgreen}{Oui} & \textcolor{successgreen}{Oui} \\
+    \bottomrule
+  \end{tabular}
+  \caption{Matrice des accès -- Oui = autorisé, Non = refusé (NT\_STATUS\_ACCESS\_DENIED)}
+\end{table}
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Journalisation}
+
+\subsection{Configuration et vérification}
+
+La journalisation est activée dans \texttt{smb.conf} avec le niveau 2, ce qui enregistre
+les authentifications, les connexions et les accès aux partages. Les logs sont générés dans
+\texttt{/var/log/samba/} avec un fichier par machine cliente (\texttt{log.\%m}).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\textwidth]{verification_logs.png}
+  \vspace{0.4cm}
+  \includegraphics[width=0.88\textwidth]{voir_log-1.png}
+  \caption{Contenu de \texttt{/var/log/samba/} après les tests~: on distingue un fichier
+    par machine ayant communiqué avec le serveur (\texttt{log.192.168.56.1} pour le
+    client hôte, \texttt{log.192.168.56.30} et \texttt{log.192.168.56.40} pour les
+    attaquants Kali). Le fichier \texttt{log.adrien-rc530-rc730} correspond au nom
+    NetBIOS de la machine hôte résolue par Samba.}
+\end{figure}
+
+\subsection{Contenu des logs -- traçabilité des connexions}
+
+Le fichier \texttt{log.192.168.56.1} (machine hôte) contient les traces d'authentification~:
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\textwidth]{connexion_client_hote.png}
+  \caption{Extrait du fichier \texttt{log.192.168.56.1}~: chaque entrée indique
+    l'horodatage précis, le résultat de l'authentification (\texttt{succeeded}),
+    le protocole SMB2/NTLMv2, et les partages chargés lors de la session
+    (\texttt{direction}, \texttt{comptabilite}, \texttt{rh}, \texttt{technique}, \texttt{commun}).}
+\end{figure}
+
+Chaque entrée de log contient~:
+\begin{itemize}[leftmargin=2em]
+  \item L'horodatage précis de la connexion (format \texttt{[AAAA/MM/JJ HH:MM:SS]})~;
+  \item L'utilisateur ayant tenté la connexion~;
+  \item Le résultat (\texttt{succeeded} ou \texttt{FAILED with error NT\_STATUS\_WRONG\_PASSWORD})~;
+  \item Le protocole utilisé (SMB2/NTLMv2)~;
+  \item L'adresse IP et le port de la machine cliente~;
+  \item Les partages accédés durant la session.
+\end{itemize}
+
+\begin{infobox}[Utilité forensique des logs]
+En cas d'incident de sécurité, ces logs permettent de retracer précisément~: qui s'est
+connecté, quand, depuis quelle machine, sur quel partage, et si la tentative a réussi ou
+échoué. C'est un élément indispensable pour toute investigation post-incident.
+\end{infobox}
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Sécurité -- Protection contre les attaques}
+
+\subsection{Désactivation de SMBv1}
+
+SMBv1 est désactivé via la directive \texttt{min protocol = SMB2} dans la section
+\texttt{[global]} de \texttt{smb.conf}. Cette mesure est la première et la plus fondamentale
+des protections. Elle a été validée lors des tests d'attaque depuis Kali (section~7.3).
+
+\subsection{Attaque 1 -- Énumération anonyme}
+
+\subsubsection{Démonstration de la vulnérabilité (avant correction)}
+
+Depuis Kali Linux, un attaquant tente de lister les partages \textit{sans s'authentifier}~:
+
+\begin{lstlisting}[style=terminal]
+smbclient -L //192.168.56.20 -N
+# -L : List shares (lister les partages)
+# -N : No password (connexion anonyme sans mot de passe)
+\end{lstlisting}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\textwidth]{partage_sans_authenetification.png}
+  \caption{AVANT correction~: \texttt{Anonymous login successful} -- la liste complète
+    des partages (\texttt{direction}, \texttt{comptabilite}, \texttt{rh},
+    \texttt{technique}, \texttt{commun}) est visible sans aucun mot de passe.
+    Un attaquant connaît déjà l'architecture interne de l'entreprise.}
+\end{figure}
+
+\begin{warningbox}[Vulnérabilité détectée -- Fuite d'information critique]
+L'accès anonyme permettait à n'importe quelle machine du réseau de découvrir
+l'existence et les noms de tous les partages sans la moindre authentification. Dans un
+contexte réel, un attaquant obtient ainsi une carte de l'organisation interne de
+l'entreprise, ce qui facilite les attaques ciblées (phishing, ingénierie sociale).
+\end{warningbox}
+
+\subsubsection{Correction -- restriction de l'accès anonyme}
+
+Ajout de la directive suivante dans la section \texttt{[global]} de \texttt{smb.conf}~:
+
+\begin{lstlisting}[style=config]
+[global]
+   ...
+   restrict anonymous = 2
+\end{lstlisting}
+
+Puis redémarrage du service~: \texttt{sudo systemctl restart smbd}
+
+\subsubsection{Validation de la correction}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\textwidth]{anonymous_refuse.png}
+  \caption{APRÈS correction~: \texttt{Anonymous login successful} s'affiche toujours
+    (ouverture de session initiale autorisée) mais la tentative de lister les partages
+    retourne immédiatement \texttt{tree connect failed: NT\_STATUS\_ACCESS\_DENIED}.
+    L'énumération est bloquée.}
+\end{figure}
+
+\begin{successbox}[Protection validée -- énumération impossible]
+Malgré l'ouverture de session anonyme initiale (comportement SMB normal), la tentative
+de lister les partages est bloquée par \texttt{NT\_STATUS\_ACCESS\_DENIED}. Un
+attaquant ne peut plus découvrir l'architecture des partages sans s'authentifier avec
+un compte valide.
+\end{successbox}
+
+\subsection{Attaque 2 -- Brute force par dictionnaire (Hydra / CrackMapExec)}
+
+\subsubsection{Tentative avec Hydra}
+
+L'outil Hydra tente une attaque par brute force sur le service SMB avec le dictionnaire
+\texttt{rockyou.txt} (14 millions de mots de passe communs)~:
+
+\begin{lstlisting}[style=terminal]
+hydra -l direction1 -P /usr/share/wordlists/rockyou.txt 192.168.56.20 smb
+# -l : login cible (un seul utilisateur)
+# -P : fichier de mots de passe (dictionnaire)
+\end{lstlisting}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{echec_hydra_du_a_smb1.png}
+  \caption{Échec d'Hydra~: \texttt{[ERROR] target does not support SMBv1}. Hydra
+    utilise SMBv1 par défaut pour les attaques SMB~; notre configuration
+    \texttt{min protocol = SMB2} le bloque immédiatement.}
+
+  \vspace{0.4cm}
+  \includegraphics[width=1\textwidth]{hydra_echoue_encore.png}
+  \caption{Même en forçant SMB2 avec le flag \texttt{-m smb2}, Hydra échoue encore~:
+    \texttt{[ERROR] target smb://192.168.56.20:445/ does not support SMBv1}.
+    L'outil ne supporte pas correctement le mode SMB2 natif pour le brute force.}
+\end{figure}
+
+\subsubsection{Attaque avec CrackMapExec (SMB2/NTLMv2)}
+
+CrackMapExec est un outil plus moderne supportant nativement SMB2~:
+
+\begin{lstlisting}[style=terminal]
+crackmapexec smb 192.168.56.20 -u direction1 \
+    -p /usr/share/wordlists/rockyou.txt
+\end{lstlisting}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{kali_attaque_ubuntu_repertorie.png}
+  \caption{Attaque brute force CrackMapExec en cours~: à gauche les logs Samba en
+    temps réel (centaines de \texttt{STATUS\_LOGON\_FAILURE}), à droite CrackMapExec
+    essayant chaque mot de passe du dictionnaire. L'IP attaquante
+    \texttt{ipv4:192.168.56.30} est clairement identifiable dans les logs. Aucun mot de
+    passe n'est trouvé car il respecte les critères de robustesse.}
+\end{figure}
+
+\begin{infobox}[Pourquoi l'attaque échoue~?]
+Le mot de passe \texttt{Direction1/+2026} ne figure pas dans \texttt{rockyou.txt} car
+il contient une majuscule, des chiffres et des caractères spéciaux. Les dictionnaires
+de brute force contiennent des mots courants, des noms propres et des combinaisons
+simples -- pas des mots de passe complexes et uniques. C'est pourquoi la politique de
+mots de passe robustes est fondamentale.
+\end{infobox}
+
+\subsection{Fail2ban -- blocage automatique des attaquants}
+
+\subsubsection{Installation et configuration}
+
+\begin{lstlisting}[style=terminal]
+sudo apt install fail2ban -y
+\end{lstlisting}
+
+\textbf{Fichier} \texttt{/etc/fail2ban/jail.local}~:
+
+\begin{lstlisting}[style=config, caption={/etc/fail2ban/jail.local}]
+[DEFAULT]
+bantime  = 600    # Duree du ban : 600 secondes (10 minutes)
+findtime = 300    # Fenetre d'observation : 5 minutes
+maxretry = 3      # Nombre d'echecs avant ban
+
+[samba]
+enabled  = true
+port     = 445,139        # Ports SMB/NetBIOS
+filter   = samba          # Nom du fichier de filtre
+backend  = auto
+logpath  = /var/log/samba/log.*  # Tous les logs Samba
+maxretry = 3
+bantime  = 600
+\end{lstlisting}
+
+\textbf{Fichier} \texttt{/etc/fail2ban/filter.d/samba.conf}~:
+
+\begin{lstlisting}[style=config, caption={/etc/fail2ban/filter.d/samba.conf}]
+[Definition]
+failregex = remote host \[ipv4:<HOST>:\d+\]
+ignoreregex =
+
+[Init]
+datepattern = ^\[%%Y/%%m/%%d %%H:%%M:%%S
+\end{lstlisting}
+
+\begin{explainbox}[Explication détaillée de la configuration Fail2ban]
+\begin{itemize}[leftmargin=1.5em,topsep=2pt]
+  \item \textbf{\texttt{bantime = 600}}~: l'IP bannie est bloquée pendant 600 secondes
+    (10 minutes). Après ce délai, le ban est automatiquement levé. Pour un ban permanent,
+    utiliser \texttt{bantime = -1}.
+  \item \textbf{\texttt{findtime = 300}}~: Fail2ban regarde en arrière sur 5 minutes. Si
+    3 échecs surviennent dans cette fenêtre, le ban est déclenché.
+  \item \textbf{\texttt{maxretry = 3}}~: seuil à 3 échecs avant bannissement. Choix
+    délibérément bas pour stopper rapidement les attaques automatisées.
+  \item \textbf{\texttt{failregex}}~: expression régulière qui identifie une ligne de log
+    correspondant à un échec. \texttt{<HOST>} est remplacé par l'IP capturée.
+  \item \textbf{\texttt{datepattern}}~: indique à Fail2ban le format de date dans les
+    logs Samba (\texttt{[AAAA/MM/JJ HH:MM:SS]}). Les \texttt{\%\%} sont nécessaires car
+    le caractère \texttt{\%} est interprété spécialement dans les fichiers ini.
+  \item \textbf{Mécanisme}~: quand le seuil est atteint, Fail2ban ajoute une règle
+    \texttt{nftables} (ou \texttt{iptables}) bloquant toutes les connexions depuis l'IP
+    bannie sur les ports 445 et 139.
+\end{itemize}
+\end{explainbox}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\textwidth]{fail2ban_marche_vraiement.png}
+  \caption{Vérification du statut de Fail2ban avec \texttt{sudo systemctl status fail2ban}
+    -- service \texttt{active (running)} depuis le 27 février 2026. Le PID 17831 indique
+    que le démon est actif et surveille les logs en temps réel.}
+\end{figure}
+
+\subsubsection{Validation -- bannissement automatique en action}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{fail2block_kali.png}
+  \caption{Fail2ban en action~: à gauche les logs montrent la progression --
+    \texttt{Found 192.168.56.40} à chaque échec, puis \texttt{Ban 192.168.56.40}
+    après le 3ème échec. À droite, Kali reçoit \texttt{Connection Error: The NETBIOS
+    connection with the remote host timed out} -- le serveur ne répond plus du tout.}
+\end{figure}
+
+\begin{successbox}[Fail2ban opérationnel -- ban automatique confirmé]
+Après exactement 3 tentatives d'authentification échouées, Fail2ban bannit
+automatiquement \texttt{192.168.56.40} (Kali Linux). Les connexions suivantes de cet
+attaquant sont immédiatement rejetées avec un timeout réseau, sans aucune réponse du
+serveur -- ce qui ralentit aussi les scans de ports.
+\end{successbox}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\textwidth]{vraie_vue.png}
+  \caption{État de la jail Samba via \texttt{sudo fail2ban-client status samba}~:
+    \texttt{Total failed: 15} tentatives enregistrées, \texttt{Total banned: 1} IP
+    bannie (192.168.56.40). \texttt{Currently banned: 0} confirme que le ban de 10
+    minutes est expiré et que l'IP a été automatiquement libérée. L'historique reste
+    consultable.}
+\end{figure}
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Sauvegarde automatisée}
+
+\subsection{Stratégie de sauvegarde}
+
+La stratégie mise en place combine deux types de sauvegarde complémentaires~:
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{lll}
+    \toprule
+    \textbf{Type} & \textbf{Fréquence} & \textbf{Méthode} \\
+    \midrule
+    Complète      & Chaque dimanche à 02h00  & \texttt{tar -czf} \\
+    Incrémentielle & Lundi -- Samedi à 02h00 & \texttt{rsync --update} \\
+    \bottomrule
+  \end{tabular}
+  \caption{Stratégie de sauvegarde automatisée}
+\end{table}
+
+\begin{explainbox}[Pourquoi combiner les deux types~?]
+\begin{itemize}[leftmargin=1.5em,topsep=2pt]
+  \item \textbf{Sauvegarde complète (\texttt{tar})}~: archive l'intégralité de
+    \texttt{/srv/samba/} en un fichier \texttt{.tar.gz}. Point de restauration fiable
+    mais lent et volumineux -- donc une fois par semaine le dimanche.
+  \item \textbf{Sauvegarde incrémentielle (\texttt{rsync})}~: ne copie que les fichiers
+    modifiés ou nouveaux depuis la dernière synchronisation. Rapide et économise l'espace
+    disque~; exécuté tous les jours de la semaine.
+  \item Cette combinaison permet de restaurer à n'importe quel point de la semaine
+    (rsync quotidien) tout en ayant une archive fiable hebdomadaire (tar).
+\end{itemize}
+\end{explainbox}
+
+\subsection{Script de sauvegarde}
+
+\begin{lstlisting}[style=config, caption={/usr/local/bin/backup\_samba.sh}]
+#!/bin/bash
+# Script de sauvegarde automatique Samba PME
+
+SOURCE="/srv/samba/"         # Repertoire source a sauvegarder
+BACKUP_DIR="/srv/backup"     # Repertoire de destination
+DATE=$(date +%Y-%m-%d)       # Format : 2026-02-27
+DAY=$(date +%u)              # Jour de la semaine : 1=Lundi, 7=Dimanche
+
+if [ "$DAY" -eq 7 ]; then
+    # Dimanche : sauvegarde COMPLETE avec tar
+    TYPE="complete"
+    tar -czf "$BACKUP_DIR/backup_${TYPE}_${DATE}.tar.gz" "$SOURCE"
+    echo "[$(date)] Sauvegarde complete effectuee" \
+        >> /var/log/samba/backup.log
+else
+    # Lundi-Samedi : sauvegarde INCREMENTIELLE avec rsync
+    TYPE="incrementielle"
+    rsync -av --update "$SOURCE" "$BACKUP_DIR/incrementielle/" \
+        >> /var/log/samba/backup.log 2>&1
+    echo "[$(date)] Sauvegarde incrementielle effectuee" \
+        >> /var/log/samba/backup.log
+fi
+\end{lstlisting}
+
+\begin{explainbox}[Explication des commandes du script]
+\begin{itemize}[leftmargin=1.5em,topsep=2pt]
+  \item \textbf{\texttt{tar -czf fichier.tar.gz /source/}}~:
+    \begin{itemize}[leftmargin=1.5em]
+      \item \texttt{-c}~: crée une nouvelle archive (\textit{create})
+      \item \texttt{-z}~: compresse avec \texttt{gzip} (réduit la taille d'environ 60\%)
+      \item \texttt{-f}~: spécifie le nom du fichier archive
+    \end{itemize}
+  \item \textbf{\texttt{rsync -av --update /source/ /dest/}}~:
+    \begin{itemize}[leftmargin=1.5em]
+      \item \texttt{-a}~: mode archive (préserve permissions, dates, liens symboliques)
+      \item \texttt{-v}~: verbeux (affiche les fichiers traités)
+      \item \texttt{--update}~: ne copie que les fichiers \textit{plus récents} que leur
+        correspondant en destination (incrémentiel)
+    \end{itemize}
+  \item \textbf{\texttt{date +\%u}}~: retourne le jour de la semaine en chiffre
+    (1=lundi ... 7=dimanche). Permet de décider automatiquement le type de sauvegarde.
+  \item \textbf{\texttt{>> /var/log/samba/backup.log}}~: ajoute la sortie au fichier de
+    log (sans écraser les entrées précédentes).
+\end{itemize}
+\end{explainbox}
+
+\subsection{Automatisation via cron}
+
+\begin{lstlisting}[style=terminal]
+# Rendre le script executable
+sudo chmod +x /usr/local/bin/backup_samba.sh
+
+# Editer la crontab de root
+sudo crontab -e
+
+# Ligne a ajouter :
+# min heure jour mois jourSemaine commande
+0 2 * * * /usr/local/bin/backup_samba.sh
+\end{lstlisting}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\textwidth]{cron_enregistre.png}
+  \caption{Crontab root avec la tâche planifiée \texttt{0 2 * * *} -- le script
+    s'exécutera tous les jours à 02h00. On voit également le contenu du journal
+    \texttt{backup.log} confirmant une sauvegarde incrémentielle réussie.}
+\end{figure}
+
+\begin{explainbox}[Lecture de la syntaxe cron~: \texttt{0 2 * * *}]
+La syntaxe cron comporte 5 champs~: \texttt{minute heure jourDuMois mois jourDeLaSemaine}
+\begin{center}
+\begin{tabular}{ccccc}
+  \texttt{0} & \texttt{2} & \texttt{*} & \texttt{*} & \texttt{*} \\
+  minute 0 & heure 2h & tous les jours & tous les mois & tous les jours \\
+\end{tabular}
+\end{center}
+Le script s'exécute donc exactement à \textbf{02h00 chaque nuit}, période de faible
+activité. Le script lui-même détermine ensuite si c'est un dimanche (sauvegarde
+complète) ou un jour de semaine (incrémentielle).
+\end{explainbox}
+
+\subsection{Test de restauration}
+
+La procédure de restauration a été testée en conditions réelles en quatre étapes.
+Un problème de permissions a été identifié et corrigé lors de ce test, ce qui
+constitue un apprentissage important.
+
+\textbf{Étape 1 -- Création d'un fichier critique}~:
+\begin{lstlisting}[style=terminal]
+echo "Donnees importantes de la direction" | \
+    sudo tee /srv/samba/direction/document_important.txt
+\end{lstlisting}
+
+\textbf{Étape 2 -- Sauvegarde}~:
+\begin{lstlisting}[style=terminal]
+sudo /usr/local/bin/backup_samba.sh
+\end{lstlisting}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\textwidth]{sauvegarde_direction.png}
+  \caption{Création de \texttt{document\_important.txt} et lancement du script de
+    sauvegarde. Le contenu de \texttt{/srv/backup/incrementielle/} confirme que tous
+    les dossiers ont été sauvegardés.}
+\end{figure}
+
+\textbf{Étape 3 -- Simulation d'une suppression accidentelle}~:
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\textwidth]{document bien supprime.png}
+  \caption{Suppression via \texttt{sudo rm} -- \texttt{document\_important.txt}
+    n'apparaît plus dans le listing. Le fichier est perdu du point de vue du serveur.}
+\end{figure}
+
+% ── PROBLÈME IDENTIFIÉ ───────────────────────────────────────────────────
+\subsubsection{Problème identifié~: pourquoi \texttt{sudo cp} est insuffisant}
+
+Une première tentative de restauration avec la commande naïve \texttt{sudo cp} a été
+effectuée, puis testée depuis les clients Samba~:
+
+\begin{lstlisting}[style=terminal]
+# Mauvaise pratique -- NE PAS utiliser en production
+sudo cp /srv/backup/incrementielle/direction/document_important.txt \
+    /srv/samba/direction/
+\end{lstlisting}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\textwidth]{permission_dossier.png}
+  \caption{\texttt{sudo ls -la /srv/samba/direction/} après restauration par
+    \texttt{sudo cp}~: \texttt{document\_important.txt} appartient à
+    \texttt{root:direction} avec les permissions \texttt{-rw-r--r--} (644).
+    Le groupe \texttt{direction} ne peut que \textbf{lire} -- le bit \texttt{w} du
+    groupe est absent. Comparer avec \texttt{test\_direction} (créé directement par
+    \texttt{direction1}) qui conserve les bonnes permissions avec setgid.}
+\end{figure}
+
+\begin{warningbox}[Problème critique~: \texttt{sudo cp} détruit les permissions]
+\texttt{sudo cp} sans options crée le fichier restauré avec les permissions par défaut
+du processus root (umask 022), donnant \texttt{-rw-r--r--} (644). Conséquences~:
+\begin{itemize}[leftmargin=1.5em,topsep=2pt]
+  \item \textbf{Lecture}~: \texttt{direction1} et \texttt{direction2} peuvent lire
+    (bit \texttt{r} du groupe présent)~;
+  \item \textbf{Écriture~: IMPOSSIBLE}~: le bit \texttt{w} du groupe est absent.
+    Toute tentative de modification depuis Samba retourne
+    \texttt{NT\_STATUS\_ACCESS\_DENIED}~;
+  \item Le \textbf{setgid} du dossier parent (\texttt{2770}) ne corrige PAS ce
+    problème~: il s'applique uniquement aux fichiers \textit{créés directement} dans
+    le dossier, jamais aux fichiers \textit{copiés} par root.
+\end{itemize}
+\end{warningbox}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.92\textwidth]{permissions_presentes.png}
+  \caption{Preuve du dysfonctionnement~: \texttt{direction1} \textbf{et} \texttt{direction2}
+    obtiennent \texttt{NT\_STATUS\_ACCESS\_DENIED opening remote file
+    \textbackslash document\_important.txt} en tentant d'écrire via smbclient.
+    Aucun membre du service Direction ne peut modifier le fichier restauré.
+    Note~: \texttt{rh1} reçoit \texttt{tree connect failed} (normal -- il
+    n'appartient pas au groupe \texttt{direction} et ne peut pas accéder au
+    partage). La restauration par \texttt{sudo cp} est donc inutilisable en
+    conditions réelles.}
+\end{figure}
+
+% ── SOLUTION CORRECTE ────────────────────────────────────────────────────
+\subsubsection{Étape 4 -- Restauration correcte avec \texttt{rsync --archive}}
+
+La solution est d'utiliser \texttt{rsync} avec le flag \texttt{--archive}, qui
+\textbf{préserve les permissions, le groupe propriétaire et les dates} tels qu'ils
+étaient au moment de la sauvegarde~:
+
+\begin{lstlisting}[style=terminal]
+# Bonne pratique -- preserve les permissions et le groupe
+sudo rsync -av --archive \
+    /srv/backup/incrementielle/direction/document_important.txt \
+    /srv/samba/direction/
+\end{lstlisting}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\textwidth]{restauration_correcte.png}
+  \caption{\texttt{rsync -av --archive} en action~: \texttt{sending incremental
+    file list} confirme l'analyse des différences, puis \texttt{document\_important.txt}
+    indique le fichier transféré. Les statistiques (\texttt{sent 78 bytes, received
+    12 bytes, total size is 37}) confirment une restauration réussie avec
+    préservation complète des métadonnées.}
+\end{figure}
+
+\begin{explainbox}[Explication détaillée~: pourquoi \texttt{rsync -av --archive} est la bonne commande]
+\begin{itemize}[leftmargin=1.5em,topsep=2pt]
+  \item \texttt{rsync}~: outil de synchronisation qui compare source et destination
+    avant de copier, ne transférant que ce qui a changé.
+  \item \texttt{--archive} (ou \texttt{-a})~: mode archive -- combine en une seule
+    option~:
+    \begin{itemize}[leftmargin=1.5em]
+      \item \texttt{-r}~: récursif (sous-dossiers inclus)
+      \item \texttt{-l}~: préserve les liens symboliques
+      \item \texttt{-p}~: préserve les \textbf{permissions} (chmod) -- résout le
+        problème des 644 vs 660
+      \item \texttt{-t}~: préserve les \textbf{dates} de modification
+      \item \texttt{-g}~: préserve le \textbf{groupe propriétaire} -- le fichier
+        retrouve son groupe \texttt{direction} au lieu de \texttt{root}
+      \item \texttt{-o}~: préserve le propriétaire (nécessite root)
+    \end{itemize}
+  \item \texttt{-v}~: mode verbeux, affiche les fichiers traités.
+  \item \textbf{Différence fondamentale avec \texttt{cp}}~: \texttt{cp} sans
+    \texttt{-a} ou \texttt{-p} crée un nouveau fichier avec les permissions par
+    défaut du processus appelant (root $\rightarrow$ 644 avec umask 022).
+    \texttt{rsync --archive} reproduit le fichier \textit{à l'identique}, permissions
+    et groupe propriétaire inclus.
+\end{itemize}
+\end{explainbox}
+
+\begin{successbox}[Restauration correcte validée]
+Après \texttt{rsync --archive}, le fichier restauré appartient à \texttt{root:direction}
+avec les permissions \texttt{-rw-rw----} (660)~: les membres du groupe
+\texttt{direction} peuvent lire \textbf{et écrire}. La restauration est complète et
+opérationnelle pour tous les utilisateurs du service.\\[6pt]
+\textbf{Pour restaurer un dossier entier}~:\\
+\texttt{sudo rsync -av --archive /srv/backup/incrementielle/direction/}
+\texttt{/srv/samba/direction/}
+\end{successbox}
+
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Difficultés rencontrées et choix techniques}
+
+\subsection{Difficultés rencontrées}
+
+\subsubsection{Configuration réseau de la VM}
+
+La principale difficulté initiale a été la configuration du réseau. L'interface Host-Only
+(\texttt{enp0s8}) restait en état \texttt{NO-CARRIER} même après la configuration netplan.
+La cause~: l'option \textit{Câble connecté} n'était pas cochée dans les paramètres VirtualBox
+de l'adaptateur réseau. Une fois cette option activée et l'IP configurée en statique
+(\texttt{192.168.56.20/24}), l'interface est devenue fonctionnelle.
+
+\subsubsection{Instabilité de l'IP de Kali}
+
+Les IPs assignées manuellement avec \texttt{ip addr add} sur Kali ne sont pas persistantes
+-- elles disparaissent à chaque redémarrage ou coupure de courant (qui est survenue plusieurs
+fois lors du travail). Cela a nécessité de réassigner l'IP plusieurs fois pendant les tests,
+et a obligé à changer l'adresse de \texttt{192.168.56.30} à \texttt{192.168.56.40} à un
+moment après un conflit. La solution pérenne aurait été de configurer la persistance via
+\texttt{/etc/network/interfaces} sur Kali.
+
+\subsubsection{Configuration de Fail2ban}
+
+Le filtre Fail2ban a nécessité plusieurs itérations. Les problèmes rencontrés~:
+\begin{enumerate}[leftmargin=2em]
+  \item Le caractère \texttt{\%} dans les patterns de date est interprété différemment par
+    Fail2ban (nécessite \texttt{\%\%} dans la section \texttt{[Init]})~;
+  \item Le filtre initial ne contenait pas de groupe \texttt{<HOST>}, rendant impossible
+    l'identification de l'IP à bannir~;
+  \item Les logs Samba n'incluent pas l'IP dans les lignes d'échec direct -- elle se trouve
+    dans les lignes \texttt{Auth:} avec le format \texttt{remote host [ipv4:X.X.X.X:port]}~;
+  \item La directive \texttt{logpath = /var/log/samba/log.\%m} contenait \texttt{\%m} que
+    Fail2ban interprète comme une variable -- remplacement par \texttt{log.*} (glob) nécessaire.
+\end{enumerate}
+
+\subsubsection{Conflit d'IP avec le réseau Host-Only}
+
+Lors de la première configuration, l'IP \texttt{192.168.56.1} avait été assignée à la VM
+alors que c'est l'IP par défaut de l'interface \texttt{vboxnet0} du PC hôte. Le conflit
+générait des erreurs de routage. Résolu en assignant \texttt{192.168.56.20} à la VM.
+
+\subsection{Choix techniques justifiés}
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{p{3.8cm}p{3.8cm}p{5.5cm}}
+    \toprule
+    \textbf{Choix} & \textbf{Alternative} & \textbf{Justification} \\
+    \midrule
+    Ubuntu Server 24.04 & Debian 12 & Déjà disponible et fonctionnel, moins de configuration initiale, meilleures docs en ligne \\
+    Host-Only + Bridge  & NAT seul  & Bridge pour Internet (\texttt{apt}), Host-Only pour isoler les tests d'attaque \\
+    \texttt{rsync} (incrémentiel) & \texttt{tar} complet quotidien & Plus rapide, ne sauvegarde que les fichiers modifiés, économise l'espace \\
+    \texttt{fail2ban} & \texttt{ufw} rate-limit & Fail2ban analyse les logs applicatifs (Samba) et non juste les paquets réseau \\
+    \texttt{nftables} (via fail2ban) & \texttt{iptables} & Standard moderne sur Ubuntu 24, meilleure performance et syntaxe unifiée \\
+    Mot de passe complexe & Mot de passe simple & Résiste aux attaques par dictionnaire comme \texttt{rockyou.txt} \\
+    \bottomrule
+  \end{tabular}
+  \caption{Justification des choix techniques}
+\end{table}
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Perspectives d'amélioration}
+
+Plusieurs améliorations pourraient renforcer ce déploiement en conditions de production~:
+
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Chiffrement des communications}~: activer le chiffrement SMB3
+    (\texttt{smb encrypt = required}) pour chiffrer toutes les données en transit.
+    Empêche l'interception même sur un réseau compromis~;
+
+  \item \textbf{Intégration LDAP/Active Directory}~: remplacer la gestion locale des
+    utilisateurs par un annuaire centralisé. Indispensable au-delà d'une dizaine
+    d'utilisateurs pour éviter la gestion manuelle~;
+
+  \item \textbf{Restriction d'accès par IP}~: ajouter \texttt{hosts allow = 192.168.56.}
+    dans \texttt{smb.conf} pour limiter les connexions aux seules machines du réseau interne~;
+
+  \item \textbf{Sauvegardes distantes}~: envoyer les sauvegardes vers un serveur distant
+    ou un stockage cloud (S3, NFS) pour garantir la disponibilité en cas de sinistre
+    physique (incendie, vol) sur le site~;
+
+  \item \textbf{Persistance des IPs sur Kali}~: configurer \texttt{/etc/network/interfaces}
+    pour rendre les IPs persistantes entre les redémarrages, évitant de reconfigurer
+    à chaque session de test~;
+
+  \item \textbf{Bannissement permanent des récidivistes}~: passer \texttt{bantime = -1}
+    dans Fail2ban avec une whitelist des IPs légit pour les attaques répétées~;
+
+  \item \textbf{Tests de sauvegarde complète}~: bien que la sauvegarde incrémentielle ait
+    été testée et validée, il serait important de valider également la restauration depuis
+    une archive \texttt{tar} complète (test de disaster recovery).
+\end{enumerate}
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Conclusion}
+
+Ce projet a permis de mettre en place un serveur de fichiers Samba complet et sécurisé
+pour une PME fictive, en partant de zéro jusqu'à un déploiement opérationnel et testé.
+L'ensemble des exigences du cahier des charges a été satisfait~:
+
+\begin{itemize}[leftmargin=2em]
+  \item Quatre groupes et huit utilisateurs créés avec des espaces dédiés et isolés~;
+  \item Permissions strictement différenciées par groupe, avec espace commun partagé~;
+  \item SMBv1 désactivé, communications en SMB2/SMB3 uniquement~;
+  \item Journalisation complète avec traçabilité de toutes les connexions~;
+  \item Protection contre l'énumération anonyme (\texttt{restrict anonymous = 2})~;
+  \item Résistance démontrée aux attaques par brute force (Hydra échoue, CrackMapExec bloqué)~;
+  \item Bannissement automatique des attaquants via Fail2ban (validé en conditions réelles)~;
+  \item Stratégie de sauvegarde complète + incrémentielle automatisée via cron~;
+  \item Procédure de restauration testée et validée en conditions réelles.
+\end{itemize}
+
+Les difficultés rencontrées -- notamment la configuration de Fail2ban (plusieurs itérations
+pour obtenir le bon filtre regex) et les instabilités réseau liées aux coupures de courant
+-- ont été autant d'occasions d'approfondir la compréhension des mécanismes sous-jacents. Ce déploiement, réalisé en environnement virtualisé, constitue une
+base solide transposable à un environnement de production réel.
+
+% ════════════════════════════════════════════════════════════════════════════
+\section*{Références}
+
+\begin{enumerate}[leftmargin=2em]
+  \item Samba Team. \textit{Samba -- Opening Windows to a Wider World}.
+    \url{https://www.samba.org/}
+  \item Microsoft. \textit{SMB security enhancements}.
+    \url{https://learn.microsoft.com/en-us/windows-server/storage/file-server/smb-security}
+  \item Fail2ban Project. \url{https://www.fail2ban.org/}
+  \item Ubuntu Server Documentation. \url{https://ubuntu.com/server/docs}
+  \item Netplan Reference. \url{https://netplan.io/reference/}
+  \item The Linux Documentation Project. \textit{Linux File Permissions}.
+    \url{https://tldp.org/LDP/intro-linux/html/sect_03_04.html}
+\end{enumerate}
+
+% ════════════════════════════════════════════════════════════════════════════
+\appendix
+\section{Annexe -- Récapitulatif des commandes utilisées}
+
+\begin{longtable}{ll}
+  \toprule
+  \textbf{Commande} & \textbf{Description} \\
+  \midrule
+  \endhead
+  \texttt{ip a} & Afficher les interfaces et adresses IP \\
+  \texttt{sudo netplan apply} & Appliquer la configuration réseau \\
+  \texttt{sudo apt install samba} & Installer Samba \\
+  \texttt{samba --version} & Vérifier la version de Samba \\
+  \texttt{sudo systemctl status smbd} & Statut du service Samba \\
+  \texttt{sudo systemctl restart smbd} & Redémarrer le service Samba \\
+  \texttt{sudo groupadd <groupe>} & Créer un groupe Linux \\
+  \texttt{sudo useradd -m -G <groupe> <user>} & Créer un utilisateur dans un groupe \\
+  \texttt{sudo passwd <user>} & Définir le mot de passe Linux \\
+  \texttt{sudo smbpasswd -a <user>} & Enregistrer l'utilisateur dans Samba \\
+  \texttt{sudo chown root:<groupe> <dossier>} & Changer le groupe propriétaire \\
+  \texttt{sudo chmod 2770 <dossier>} & Permissions setgid + accès total groupe \\
+  \texttt{sudo chmod 2777 <dossier>} & Permissions setgid + accès total tous \\
+  \texttt{testparm} & Valider la syntaxe de smb.conf \\
+  \texttt{smbclient -L //IP -N} & Lister les partages en anonyme (test) \\
+  \texttt{smbclient -L //IP -U user} & Lister les partages avec authentification \\
+  \texttt{smbclient //IP/share -U user} & Se connecter à un partage \\
+  \texttt{sudo tail -f /var/log/samba/log.*} & Surveiller les logs en temps réel \\
+  \texttt{sudo fail2ban-client status samba} & Statut de la jail Samba dans Fail2ban \\
+  \texttt{sudo fail2ban-regex <log> <filter>} & Tester un filtre Fail2ban \\
+  \texttt{sudo /usr/local/bin/backup\_samba.sh} & Lancer manuellement la sauvegarde \\
+  \texttt{sudo crontab -l} & Lister les tâches cron root \\
+  \texttt{sudo crontab -e} & Éditer les tâches cron root \\
+  \texttt{tar -czf archive.tar.gz /dossier/} & Créer une archive compressée \\
+  \texttt{rsync -av --update /src/ /dst/} & Synchronisation incrémentielle \\
+  \bottomrule
+\end{longtable}
+
+\end{document}
