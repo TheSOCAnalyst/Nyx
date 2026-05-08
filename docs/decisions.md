@@ -317,3 +317,25 @@ Ces décisions sont figées pour la durée du projet.
 | P-D5 | Dataset d'évaluation isolé semaine 3, jamais modifié ensuite | Figé |
 | P-D6 | Benchmark : Wazuh uniquement (même catégorie fonctionnelle SIEM/corrélation) | Figé |
 | P-D7 | Python 3.12 (min. 3.10), toutes dépendances pinnées dans `requirements.txt` | Figé |
+
+### P-D8 — Limite topologie : trafic Est-Ouest non filtré par OPNsense
+
+**Constat** : Kali (10.0.1.50) et target (10.0.1.20) sont sur le même
+segment L2 (bridge virbr2). Le trafic inter-VMs ne traverse pas OPNsense.
+
+**Impact par scénario** :
+- S1 (brute-force SSH) : aucun impact. Détection HIDS via logs auth de
+  target. OPNsense n'était pas dans la chaîne de détection prévue.
+- S2 (scan + exfiltration) : impact partiel. OPNsense ne voit pas le
+  trafic SMB entre Kali et target. Il voit les paquets nmap adressés
+  à 10.0.1.1 (lui-même) pendant le scan — suffisant pour un log de
+  reconnaissance.
+
+**Décision** : topologie maintenue. La détection S1 est HIDS par
+conception. La détection S2 combine logs OPNsense (scan) + logs
+Samba sur target (brute-force SMB + exfiltration). Ce modèle est
+documenté comme limite de lab dans le rapport.
+
+**Pour une version future** : placer Kali sur un segment séparé
+(10.0.2.0/24) avec routage via OPNsense pour une visibilité complète
+du trafic Est-Ouest.
