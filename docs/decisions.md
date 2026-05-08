@@ -1,6 +1,6 @@
 # Journal des décisions architecturales et de scope
 
-Règle de ce fichier : **pourquoi**, pas quoi. Ce qui est déjà dans `mini-soc-rapport.pdf`
+Règle de ce fichier : **pourquoi**, pas quoi. Ce qui est déjà dans `ProjetFinal.pdf`
 n'est pas répété ici. Chaque entrée documente un choix qui n'allait pas de soi, un pivot,
 ou une contrainte explicite.
 
@@ -258,6 +258,51 @@ syslog.*         @10.0.1.10:514
 **Décision permanente** : ajoutée au tableau des décisions figées (P-D1 étendue).
 
 ---
+
+### S1-D5 — Facility syslog Samba : `daemon.*` requis, `syslog.*` insuffisant
+
+**Décision** : La transmission des logs Samba vers le SOC nécessite la facility
+`daemon.*` dans `50-forward.conf`. La facility `syslog.*` ne suffit pas.
+
+**Justification** :
+
+Samba (`smbd`) émet ses messages via l'API syslog C avec la constante `LOG_DAEMON`
+— c'est hardcodé dans le source de Samba, indépendant de `smb.conf`. La facility
+`daemon` est la catégorie standard pour les services système génériques sous Linux.
+
+La facility `syslog` capture les messages internes de rsyslog lui-même, pas les
+messages des démons système. Ajouter `syslog.*` dans `50-forward.conf` sans
+`daemon.*` laisse donc les logs smbd invisibles pour le SOC malgré `logging = syslog`
+dans `smb.conf`.
+
+Flux complet après correction :
+```
+smbd → syslog(LOG_DAEMON, ...) → kernel → rsyslog
+     → 50-forward.conf : daemon.* → UDP 514 → SOC
+```
+
+**Symptôme diagnostique** : logs visibles dans `/var/log/syslog` sur target
+(capturés par `50-default.conf : *.*`) mais absents de `/var/log/remote/debian.log`
+sur le SOC.
+
+**Méthode de diagnostic générale** :
+1. Vérifier `/var/log/syslog` sur la source — si le message y est, rsyslog le reçoit
+2. Identifier la facility : `grep <service> /var/log/syslog` et lire le prefixe
+3. Ajouter la facility manquante dans `50-forward.conf`
+
+**Config `50-forward.conf` finale sur target** :
+```
+auth,authpriv.*  @10.0.1.10:514   # SSH, PAM, sudo
+syslog.*         @10.0.1.10:514   # Messages internes rsyslog
+daemon.*         @10.0.1.10:514   # Samba (smbd, nmbd) et autres démons
+```
+
+**Règle générale pour un lab SOC** : transmettre `auth,authpriv.*` + `daemon.*`
++ `kern.*` couvre 90% des événements de sécurité pertinents. `kern.*` sera ajouté
+si OPNsense ou des événements kernel deviennent nécessaires.
+
+---
+
 
 ## Décisions permanentes (scope — toutes semaines)
 

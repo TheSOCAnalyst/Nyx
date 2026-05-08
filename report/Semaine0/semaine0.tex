@@ -1,0 +1,302 @@
+\documentclass[12pt,a4paper]{article}
+
+% --- Packages essentiels ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{geometry}
+\geometry{left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{fancyvrb}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{float}
+\usepackage[utf8]{inputenc}
+\usepackage{newunicodechar}
+\newunicodechar{➤}{\textrightarrow{}}
+
+% --- Mise en forme des recommandations ---
+\newenvironment{recommandation}{
+    \vspace{0.5em}
+    \noindent\textbf{\textcolor{blue}{➤ Recommandation :}}\hspace{0.5em}
+}{
+    \vspace{0.5em}
+}
+
+\title{\textbf{Semaine 0 – Choix techniques et architecture du laboratoire}} 
+
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+Ce document constitue le livrable de la \textbf{semaine 0} du projet . Il détaille les décisions techniques prises pour l'architecture du laboratoire virtualisé, les choix des systèmes d'exploitation, l'allocation des ressources mémoire, la topologie réseau et la gestion des flux de logs. Ces choix sont guidés par les contraintes du projet : budget matériel limité (16 Go de RAM sur l'hôte Xubuntu), nécessité de simuler un environnement de PME togolaise, et obligation de comparer ultérieurement le moteur Python développé avec la solution Wazuh dans des conditions contrôlées.
+
+Toutes les décisions documentées ici s'appuient sur le document de projet initial (\texttt{mini-soc-rapport.pdf}) mais en adaptent certains aspects pour améliorer le réalisme et la robustesse du laboratoire.
+
+\section{Topologie générale du laboratoire virtualisé}
+
+Le laboratoire est construit sous \textbf{VirtualBox 7.x} sur un hôte physique équipé de 16 Go de RAM et du système \textbf{Xubuntu 24.04 LTS}. Les machines virtuelles (VMs) communiquent via un réseau interne VirtualBox (\texttt{vboxnet0}) en mode \textit{Host-Only}, complètement isolé de l'Internet direct (sauf pour les mises à jour initiales, via une interface NAT temporaire).
+
+\subsection{Composition des machines virtuelles}
+
+\begin{table}[H]
+\centering
+\caption{Composition du laboratoire – VMs et allocation mémoire}
+\label{tab:lab-vms}
+\begin{tabular}{|l|c|c|c|p{5cm}|}
+\hline
+\textbf{Composant} & \textbf{OS} & \textbf{RAM} & \textbf{IP} & \textbf{Rôle principal} \\
+\hline
+Firewall / Routeur   & OPNsense 24.7    & 1 Go  & 10.0.1.1 (LAN) & Routage, segmentation réseau, génération de logs de pare-feu \\
+\hline
+Serveur SOC          & Ubuntu Server 24.04 & 6 Go  & 10.0.1.10    & \begin{itemize}[leftmargin=*,nosep]
+    \item Collecte centralisée des logs
+    \item Moteur de corrélation Python (phases 1–7)
+    \item Stack Wazuh (Docker, phases 8–10)
+\end{itemize} \\
+\hline
+Serveur Cible        & Debian 12         & 1 Go  & 10.0.1.20    & \begin{itemize}[leftmargin=*,nosep]
+    \item Service SSH (cible brute-force)
+    \item Service de fichiers (FTP/SMB pour scénario d'exfiltration)
+\end{itemize} \\
+\hline
+Machine attaquante   & Kali Linux (XFCE) & 2 Go  & 10.0.1.50    & Simulation des scénarios d'attaque (brute-force SSH, scan réseau, exfiltration) \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{recommandation}
+\textbf{Ajustement de la RAM du SOC :} La proposition initiale prévoyait 8 Go pour cette VM. Afin de maintenir une marge de sécurité confortable pour l'hôte Xubuntu (qui consomme $\approx 3$ Go avec VS Code et Wireshark), la RAM allouée a été réduite à \textbf{6 Go}. Cela reste largement suffisant : le moteur Python n'utilise que 1,5–2 Go, et Wazuh sera limité à 4 Go maximum via les contraintes Docker (voir section~\ref{sec:wazuh}).
+\end{recommandation}
+
+\subsection{Justification du réseau interne}
+
+Le sous-réseau \texttt{10.0.1.0/24} est utilisé en mode \textit{Host-Only} avec l'option \textit{Internal Network} de VirtualBox. Cela garantit :
+\begin{itemize}
+    \item Une isolation totale du laboratoire vis-à-vis du réseau domestique ou universitaire.
+    \item La possibilité de capturer le trafic sur l'interface \texttt{vboxnet0} avec Wireshark depuis l'hôte, pour déboguer les flux de logs.
+    \item Une configuration statique reproductible (pas de DHCP parasite).
+\end{itemize}
+
+\section{Écarts par rapport au plan initial du projet}
+\label{sec:ecarts}
+
+Le document de référence (\texttt{mini-soc-rapport.pdf}) proposait une architecture avec une VM Alpine Linux (512 Mo) et des conteneurs Docker pour la collecte et la cible. Les écarts suivants ont été délibérément introduits pour améliorer le réalisme et la robustesse du laboratoire.
+
+\subsection{Remplacement d'Alpine Linux par OPNsense pour le pare-feu}
+
+\textbf{Motivation :}
+\begin{itemize}
+    \item OPNsense offre une interface web complète pour configurer les règles de pare-feu, le NAT et la redirection de logs (syslog). Cela accélère la mise en place et correspond davantage aux appliances utilisées dans les PME (même si souvent en matériel dédié).
+    \item La surcharge mémoire (1 Go contre 512 Mo) est acceptable dans le budget global et ne compromet pas les objectifs de performance.
+\end{itemize}
+
+\subsection{Regroupement du moteur Python et de Wazuh sur une seule VM}
+
+\textbf{Motivation :}
+\begin{itemize}
+    \item Simplification de la gestion des logs : toutes les sources (firewall, cible) envoient leurs flux vers une unique IP (\texttt{10.0.1.10}), que ce soit pour le moteur Python ou pour Wazuh.
+    \item \textbf{Isolation temporelle stricte} : durant les semaines 1 à 7, la stack Wazuh reste arrêtée (\texttt{docker-compose stop}) ; durant les semaines 8 à 10, le moteur Python est stoppé et seul Wazuh est actif. Les deux systèmes ne s'exécutent \textbf{jamais simultanément}.
+    \item Les mesures de performance (RAM, CPU, latence) seront donc comparables à celles qu'on obtiendrait avec deux machines distinctes.
+\end{itemize}
+
+\subsection{Utilisation de machines virtuelles complètes plutôt que de conteneurs pour la cible}
+
+\textbf{Motivation :}
+\begin{itemize}
+    \item Une PME togolaise typique utilise un serveur physique ou un VPS (Virtual Private Server) exécutant un OS complet (Linux). Une VM Debian reproduit plus fidèlement ce contexte qu'un conteneur Docker léger.
+    \item Les logs générés (\texttt{/var/log/auth.log}) sont strictement identiques à ceux d'un système réel.
+\end{itemize}
+
+\section{Flux de logs et configuration initiale}
+\label{sec:logs}
+
+Pour alimenter le moteur de corrélation (puis Wazuh), deux sources principales de logs sont configurées dès la semaine 0.
+
+\subsection{Depuis le pare-feu OPNsense}
+
+\begin{itemize}
+    \item \textbf{Configuration :} \texttt{System $\rightarrow$ Settings $\rightarrow$ Logging / Targets}
+    \item \textbf{Cible :} \texttt{10.0.1.10} port \texttt{514} (UDP)
+    \item \textbf{Niveau de log :} \texttt{Notice} et supérieur
+    \item \textbf{Contenu :} événements de pare-feu (blocages, scans détectés via les règles IDS/IPS optionnelles)
+\end{itemize}
+
+\begin{recommandation}
+Bien qu'OPNsense puisse générer un volume important de logs, il est conseillé de conserver le niveau \texttt{Notice} pour ne pas perdre d'événements de sécurité pertinents. Le moteur Python filtrera les champs nécessaires lors de la normalisation.
+\end{recommandation}
+
+\subsection{Depuis la machine cible Debian}
+
+\begin{itemize}
+    \item \textbf{Fichier de configuration :} \texttt{/etc/rsyslog.d/50-forward.conf}
+    \item \textbf{Contenu :}
+    \begin{Verbatim}[frame=single]
+    # Transfère uniquement les logs d'authentification
+    auth,authpriv.*  @10.0.1.10:514
+    \end{Verbatim}
+    \item \textbf{Redémarrage :} \texttt{systemctl restart rsyslog}
+\end{itemize}
+
+\begin{recommandation}
+\textbf{Pourquoi ne transférer que \texttt{auth,authpriv} ?} Cela évite de saturer le collecteur avec des logs inutiles (cron, debug, messages noyau) et garantit que le moteur Python reçoit précisément les événements nécessaires au scénario de brute-force SSH. Si d'autres scénarios l'exigent plus tard, on pourra ajouter d'autres \textit{facilities}.
+\end{recommandation}
+
+\subsection{Réception sur le serveur SOC}
+
+Sur la VM SOC, le service \texttt{rsyslog} est configuré pour écouter sur le port UDP 514 et écrire les logs reçus dans \texttt{/var/log/remote/}. Le collecteur Python (développé à partir de la semaine 3) pourra soit lire directement ces fichiers, soit être alimenté via un socket Unix.
+
+\section{Rôle de l'hôte Xubuntu dans le développement}
+
+L'hôte physique \textbf{n'exécute aucun service de sécurité}. Il est exclusivement dédié aux tâches suivantes :
+
+\begin{itemize}
+    \item \textbf{Édition de code :} Visual Studio Code avec l'extension \texttt{Remote - SSH}. Cela permet de travailler sur le code source localement tout en l'exécutant et le testant directement sur la VM SOC.
+    \item \textbf{Gestion de versions :} Le dépôt Git \texttt{mini-soc-togo} est cloné sur l'hôte et synchronisé régulièrement avec un dépôt distant privé (GitLab).
+    \item \textbf{Analyse réseau :} Wireshark est utilisé pour capturer le trafic sur l'interface virtuelle \texttt{vboxnet0} et vérifier que les paquets syslog arrivent correctement sur le port 514.
+    \item \textbf{Accès console :} Toutes les VMs sont administrées en SSH depuis le terminal de l'hôte. Les interfaces graphiques de VirtualBox restent fermées (mode \textit{headless}) pour économiser la RAM.
+    \item \textbf{Rédaction du rapport :} Le document LaTeX du projet est maintenu sur l'hôte.
+\end{itemize}
+
+Cette séparation nette entre environnement de développement et environnement d'exécution assure que les mesures de performance (RAM, CPU, latence) ne seront pas faussées par les outils bureautiques de l'hôte.
+
+
+
+\section{Gestion de la stack Wazuh (phases 8–10)}
+\label{sec:wazuh}
+
+Pour le benchmark comparatif, Wazuh sera déployé sur la \textbf{VM SOC} à l'aide de \texttt{docker-compose} (version officielle fournie par Wazuh).
+
+\subsection{Choix de Docker}
+
+L'installation manuelle (\textit{bare metal}) de Wazuh (Manager + Indexer + Dashboard) est complexe et consommatrice de ressources. L'approche conteneurisée offre plusieurs avantages :
+
+\begin{itemize}
+    \item \textbf{Reproductibilité :} un simple \texttt{docker-compose up -d} lance toute la stack.
+    \item \textbf{Limitation précise des ressources :} on peut imposer des quotas mémoire et CPU par conteneur, ce qui est crucial pour rester dans l'enveloppe des 6 Go de la VM.
+    \item \textbf{Isolation :} les dépendances (Java pour OpenSearch, Python pour le manager) restent confinées.
+    \item \textbf{Mode dormant :} \texttt{docker-compose stop} arrête tous les processus et libère intégralement la RAM. La commande sera exécutée à la fin de chaque session de test pendant les semaines 8–10.
+\end{itemize}
+
+\subsection{Configuration Docker et limites mémoire}
+
+Extrait du fichier \texttt{docker-compose.yml} prévu :
+
+\begin{Verbatim}[frame=single,fontsize=\small]
+services:
+  wazuh-indexer:
+    image: wazuh/wazuh-indexer:4.7.3
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+    volumes:
+      - ./wazuh-data/indexer:/usr/share/wazuh-indexer/data
+
+  wazuh-manager:
+    image: wazuh/wazuh-manager:4.7.3
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    ports:
+      - "514:514/udp"   # Réception syslog
+    volumes:
+      - ./wazuh-data/manager:/var/ossec/data
+
+  wazuh-dashboard:
+    image: wazuh/wazuh-dashboard:4.7.3
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    ports:
+      - "5601:5601"
+\end{Verbatim}
+
+\begin{recommandation}
+\textbf{Validation des limites mémoire :} Les valeurs ci-dessus (3 Go pour l'indexer, 1 Go pour le manager) sont des \textbf{maximums absolus}. En pratique, la consommation réelle pourra être surveillée avec \texttt{docker stats} et éventuellement ajustée à la baisse si la machine montre des signes de \textit{swap}. L'important est que la somme des limites n'excède pas la RAM disponible sur la VM (6 Go).
+\end{recommandation}
+
+\subsection{Ingestion des logs par Wazuh}
+
+Le manager Wazuh écoutera sur le port UDP 514 (mappé sur l'hôte Docker) grâce au module \texttt{remote}. Une règle de décodage personnalisée sera écrite pour analyser les logs syslog provenant d'OPNsense et de la cible Debian, reproduisant ainsi le même flux que celui traité par le moteur Python.
+
+\section{Bilan de l'empreinte mémoire prévisionnelle}
+
+Le tableau~\ref{tab:ram-budget} détaille la consommation mémoire prévue pour les deux grandes phases du projet.
+
+\begin{table}[H]
+\centering
+\caption{Budget RAM du laboratoire par phase}
+\label{tab:ram-budget}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Composant} & \textbf{Phases 1–7 (dév. moteur)} & \textbf{Phases 8–10 (benchmark)} \\
+\hline
+Firewall OPNsense       & 1 Go  & 1 Go  \\
+Serveur SOC (OS + services de base) & 1 Go  & 1 Go  \\
+Moteur Python (en charge) & 1,5 Go & 0 Go (arrêté) \\
+Wazuh (Indexer + Manager + Dashboard) & 0 Go  & $\leq 4,5$ Go (limites Docker) \\
+Serveur Cible Debian    & 1 Go  & 1 Go  \\
+Machine attaquante Kali & 2 Go  & 2 Go  \\
+\hline
+\textbf{Total VMs}      & \textbf{6,5 Go} & \textbf{9,5 Go} \\
+Hôte Xubuntu (OS + VS Code + Wireshark) & $\approx 3$ Go & $\approx 3$ Go \\
+\hline
+\textbf{Total général}  & \textbf{$\approx 9,5$ Go} & \textbf{$\approx 12,5$ Go} \\
+\hline
+\end{tabular}
+\end{table}
+
+Avec 16 Go de RAM physique sur l'hôte, il reste une marge de sécurité de \textbf{3,5 à 6,5 Go}. Cette marge permet :
+\begin{itemize}
+    \item d'absorber des pics ponctuels (compilation, snapshots VirtualBox),
+    \item d'utiliser l'interface graphique de Kali Linux sans ralentissements,
+    \item d'éventuellement augmenter légèrement les limites Docker si l'indexer Wazuh nécessite plus de ressources (tout en restant sous 4 Go).
+\end{itemize}
+
+\begin{recommandation}
+\textbf{Surveillance proactive du swap :} Sur la VM SOC (Ubuntu), il est conseillé de réduire la tendance à utiliser le swap (\textit{swappiness}) en ajoutant \texttt{vm.swappiness=10} dans \texttt{/etc/sysctl.conf}. Cela évitera que le système ne commence à swapper alors qu'il reste de la RAM libre.
+\end{recommandation}
+
+\section{Recommandations techniques complémentaires}
+
+Cette section synthétise les points d'attention importants pour les prochaines semaines.
+
+\subsection{Snapshots VirtualBox}
+
+\begin{recommandation}
+Avant de démarrer la semaine 3 (collecte des logs) et surtout avant le déploiement de Wazuh en semaine 8,  un \textbf{snapshot} de la VM SOC dans VirtualBox sera pris afin que en cas d'erreur de configuration ou de corruption des données, je puisse revenir instantanément à un état fonctionnel sans devoir tout réinstaller.
+\end{recommandation}
+
+\subsection{Synchronisation temporelle}
+
+\begin{recommandation}
+Pour que les mesures de latence (délai entre événement et alerte) soient fiables, il est impératif que toutes les VMs soient synchronisées. Je configurerai \texttt{chrony} ou \texttt{systemd-timesyncd} pour pointer vers une source NTP commune (par exemple \texttt{pool.ntp.org}) ou, à défaut, ajuster manuellement les horloges avant chaque session de test avec \texttt{date -s}.
+\end{recommandation}
+
+\subsection{Journalisation des décisions}
+
+\begin{recommandation}
+Le fichier \texttt{docs/decisions.md} mentionné dans la structure du dépôt Git doit être alimenté dès la semaine 0 avec les justifications des écarts décrits à la section~\ref{sec:ecarts}. Cela facilitera la rédaction du rapport final et montrera une démarche d'ingénierie rigoureuse.
+\end{recommandation}
+
+\section{Conclusion de la semaine 0}
+
+L'architecture retenue pour le laboratoire virtualisé concilie les contraintes matérielles strictes (16 Go de RAM total, coût nul) avec les objectifs du projet : développer un moteur de corrélation Python, le tester sur deux scénarios représentatifs, et le comparer objectivement à Wazuh. Les écarts par rapport au plan initial sont mineurs et justifiés par un gain en réalisme ou en fiabilité.
+
+La topologie réseau, les flux de logs et la gestion des ressources ont été documentés de manière exhaustive. Le laboratoire est maintenant prêt pour la \textbf{semaine 1} : mise en place de l'infrastructure de base (firewall, routage, connectivité).
+
+\textbf{Prochaine étape :} Déploiement du pare-feu OPNsense, configuration des règles de routage et tests de connectivité entre toutes les machines.
+
+\end{document}

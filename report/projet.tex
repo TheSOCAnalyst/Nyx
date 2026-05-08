@@ -1,0 +1,1050 @@
+\documentclass[11pt,a4paper]{article}
+
+% -- Encodage & langue --------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+
+% -- Mise en page ------------------------------------------------
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm, right=2.8cm]{geometry}
+\usepackage{parskip}
+\setlength{\parskip}{6pt}
+
+% -- Typographie -------------------------------------------------
+% lmodern not available -- using default CM fonts
+\usepackage[disable]{microtype}
+
+% -- Couleurs ----------------------------------------------------
+\usepackage[dvipsnames]{xcolor}
+\definecolor{darkblue}{RGB}{26,58,92}
+\definecolor{midblue}{RGB}{46,109,164}
+\definecolor{lightblue}{RGB}{214,228,240}
+\definecolor{accent}{RGB}{200,100,0}
+\definecolor{darkgray}{RGB}{80,80,80}
+\definecolor{lightgray}{RGB}{245,245,245}
+\definecolor{warningbg}{RGB}{255,243,220}
+\definecolor{warningborder}{RGB}{200,130,0}
+\definecolor{okbg}{RGB}{232,245,238}
+\definecolor{okborder}{RGB}{26,107,58}
+\definecolor{nogobg}{RGB}{253,236,234}
+\definecolor{nogoborder}{RGB}{192,57,43}
+\definecolor{codebg}{RGB}{248,248,248}
+
+% -- Sections ----------------------------------------------------
+\usepackage{sectsty}
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries\color{darkblue}}{}{0em}{}[\color{midblue}\rule{\linewidth}{0.5pt}]
+\titleformat{\subsection}{\normalsize\bfseries\color{midblue}}{}{0em}{}
+\titleformat{\subsubsection}{\normalsize\itshape\color{darkgray}}{}{0em}{}
+
+% -- Tableaux ----------------------------------------------------
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{colortbl}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+% -- Boîtes colorées ---------------------------------------------
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+
+\newtcolorbox{infobox}[1][]{
+  enhanced, breakable,
+  colback=lightblue!40, colframe=midblue,
+  boxrule=0.6pt, arc=4pt,
+  left=8pt, right=8pt, top=6pt, bottom=6pt,
+  fonttitle=\small\bfseries\color{darkblue},
+  #1
+}
+\newtcolorbox{warningbox}[1][]{
+  enhanced, breakable,
+  colback=warningbg, colframe=warningborder,
+  boxrule=0.6pt, arc=4pt,
+  left=8pt, right=8pt, top=6pt, bottom=6pt,
+  fonttitle=\small\bfseries\color{accent},
+  #1
+}
+\newtcolorbox{okbox}[1][]{
+  enhanced, breakable,
+  colback=okbg, colframe=okborder,
+  boxrule=0.6pt, arc=4pt,
+  left=8pt, right=8pt, top=6pt, bottom=6pt,
+  fonttitle=\small\bfseries\color{okborder},
+  #1
+}
+\newtcolorbox{nogobox}[1][]{
+  enhanced, breakable,
+  colback=nogobg, colframe=nogoborder,
+  boxrule=0.6pt, arc=4pt,
+  left=8pt, right=8pt, top=6pt, bottom=6pt,
+  fonttitle=\small\bfseries\color{nogoborder},
+  #1
+}
+
+% -- Code --------------------------------------------------------
+\usepackage{listings}
+\lstset{
+  backgroundcolor=\color{codebg},
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{midblue}\bfseries,
+  commentstyle=\color{darkgray}\itshape,
+  stringstyle=\color{accent},
+  frame=single, framesep=4pt,
+  frameround=tttt,
+  rulecolor=\color{lightblue!80!black},
+  breaklines=true,
+  showstringspaces=false,
+  xleftmargin=8pt, xrightmargin=4pt,
+  aboveskip=8pt, belowskip=8pt,
+}
+\lstdefinelanguage{YAML}{
+  keywords={true,false,null,yes,no},
+  sensitive=false,
+  comment=[l]{\#},
+  morestring=[b]',
+  morestring=[b]",
+}
+
+% -- Figures & graphiques ----------------------------------------
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, calc}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{float}
+\usepackage{caption}
+\captionsetup{font=small, labelfont=bf, labelsep=period}
+
+% -- Maths --------------------------------------------------------
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% -- Listes ------------------------------------------------------
+\usepackage{enumitem}
+\setlist[itemize]{topsep=2pt, itemsep=2pt, parsep=0pt}
+\setlist[enumerate]{topsep=2pt, itemsep=2pt, parsep=0pt}
+
+% -- Liens -------------------------------------------------------
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=midblue,
+  citecolor=midblue,
+  urlcolor=midblue,
+  pdftitle={Mini-SOC Low-Cost pour PME Togolaises},
+  pdfauthor={Adrien},
+}
+
+% -- Bibliographie -----------------------------------------------
+\usepackage{natbib}
+\bibliographystyle{plainnat}
+
+% -- En-têtes/pieds ----------------------------------------------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\small\color{darkgray}\thepage}
+\lhead{\small\color{darkgray}Mini-SOC — EPL Lomé}
+\renewcommand{\headrulewidth}{0.4pt}
+\cfoot{\small\color{darkgray}Projet de remplacement de stage — L3 Informatique et Systèmes}
+
+% -- Titre --------------------------------------------------------
+\title{
+  {\large\color{darkgray} Projet de remplacement de stage — L3 Informatique et Systèmes}\\[0.4cm]
+  {\LARGE\bfseries\color{darkblue}
+    Conception d'un Mini-SOC Low-Cost\\
+    pour PME Togolaises}\\[0.3cm]
+  {\large\color{midblue}
+    Moteur de corrélation stateful en Python\\
+    et évaluation comparative avec Wazuh}
+}
+\author{
+  \textbf{Adrien}\\
+  \small École Polytechnique de Lomé (EPL)\\
+  \small L3 Informatique et Systèmes
+}
+\date{Mars 2026}
+
+% ════════════════════════════════════════════════════════════════
+\begin{document}
+% ════════════════════════════════════════════════════════════════
+
+\maketitle
+\thispagestyle{empty}
+
+% -- Résumé -------------------------------------------------------
+\begin{abstract}
+\noindent
+Ce projet propose la conception et l'implémentation d'un \emph{mini-SOC open-source}
+adapté aux contraintes des PME togolaises : budget limité, ressources matérielles
+restreintes, et pénurie de compétences en cybersécurité.
+Le système comprend un pipeline de collecte et normalisation de logs,
+un moteur de corrélation stateful développé en Python avec règles externalisées en YAML,
+et deux scénarios d'attaque simulés représentatifs des menaces locales.
+La solution est rigoureusement évaluée et comparée à Wazuh, solution industrielle
+open-source de référence, selon des métriques de détection (taux vrais/faux positifs),
+de latence et de consommation de ressources.
+Les livrables incluent un dépôt Git reproductible (IaC), un rapport analytique
+et une démonstration technique en direct.
+Ce projet s'inscrit dans le contexte de la Stratégie Nationale de Cybersécurité du Togo
+2024--2028 et vise à démontrer la faisabilité d'une approche de détection
+à coût quasi-nul pour les organisations de la sous-région.
+\end{abstract}
+
+\vspace{0.5cm}
+\begin{infobox}[title={Note méthodologique importante}]
+Les chiffres de performance présentés dans ce rapport (taux de détection, latence, RAM)
+sont des \textbf{objectifs de conception}, pas des résultats mesurés.
+Les mesures réelles seront collectées lors des phases de test (semaines~5--8)
+et viendront remplacer ces valeurs cibles dans le rapport final.
+\end{infobox}
+
+\tableofcontents
+\newpage
+
+% ════════════════════════════════════════════════════════════════
+\section{Introduction}
+% ════════════════════════════════════════════════════════════════
+
+\subsection{Contexte togolais}
+
+\subsubsection{Données sourcées}
+
+L'Union Internationale des Télécommunications (UIT) publie annuellement
+l'indice mondial de cybersécurité (GCI), qui positionne le Togo parmi
+les pays africains en progression sur les cinq piliers évalués
+(cadre légal, capacités techniques, organisation institutionnelle,
+renforcement des capacités, coopération internationale)~\citep{itu_gci2024}.
+L'Agence Nationale de la Cybersécurité (ANCy), créée en 2020, constitue
+le principal organe de coordination nationale en matière de sécurité numérique.
+
+Sur le plan des coûts, les tarifs publics des solutions SIEM commerciales
+permettent d'établir un constat objectif et vérifiable : une licence Splunk
+Enterprise débute à plusieurs dizaines de milliers de dollars annuels,
+et les solutions EDR professionnelles (CrowdStrike Falcon, SentinelOne)
+facturent entre 50 et 150~USD par poste et par an.
+Ces coûts sont structurellement incompatibles avec les capacités budgétaires
+des petites et moyennes entreprises de la sous-région.
+
+\subsubsection{Constats observationnels}
+
+Les éléments suivants sont présentés comme des constats qualitatifs,
+non comme des statistiques mesurées, en l'absence de sources académiques
+publiées suffisamment granulaires sur le tissu des PME togolaises :
+
+\begin{itemize}
+  \item \textbf{Coût des solutions industrielles.} Les SIEM commerciaux
+        (Splunk, IBM QRadar) et les EDR professionnels dépassent
+        structurellement les capacités budgétaires des PME de la sous-région,
+        indépendamment de toute statistique précise sur leur taux d'adoption.
+  \item \textbf{Pénurie de compétences locales.} Les formations spécialisées
+        en cybersécurité opérationnelle (Blue Team, analyse forensique,
+        ingénierie SOC) sont peu développées en Afrique de l'Ouest
+        francophone ; l'EPL Lomé constitue l'une des rares institutions
+        proposant une filière informatique structurée au Togo.
+  \item \textbf{Menaces peu couvertes localement.} Les vecteurs d'attaque
+        les plus fréquents dans le contexte ouest-africain --- phishing via
+        WhatsApp et SMS, fraude aux services Mobile Money (Flooz, T-Money),
+        ransomwares ciblant des systèmes Windows non patchés --- sont peu
+        représentés dans les bases de règles des solutions génériques
+        internationales, conçues pour des contextes d'entreprise occidentaux.
+\end{itemize}
+
+\begin{infobox}[title={Positionnement méthodologique sur les données contextuelles}]
+Ce rapport distingue explicitement deux niveaux de données :
+\textbf{(1) données sourcées}, étayées par des publications officielles
+citées en bibliographie ;
+\textbf{(2) constats observationnels}, présentés comme tels
+sans prétention statistique.
+Cette distinction est intentionnelle : introduire des chiffres précis
+sans source vérifiable dans un rapport académique constitue une faute
+méthodologique. Si des rapports ANCy ou des études CEDEAO accessibles
+sont identifiés avant la soutenance, ils remplaceront les constats
+observationnels correspondants.
+\end{infobox}
+
+\subsection{Problématique}
+
+\begin{center}
+\begin{tikzpicture}
+  \node[draw=midblue, fill=lightblue!30, rounded corners=6pt,
+        text width=13cm, align=center, inner sep=10pt,
+        font=\normalsize] (q) {
+    \textbf{Question centrale}\\[4pt]
+    Est-il possible de construire un système de détection d'intrusion stateful,
+    capable d'identifier des chaînes d'attaques complexes (kill-chains),
+    avec des contraintes matérielles compatibles avec les PME togolaises
+    (\(\leq\)8\,Go RAM, coût logiciel nul), et dont les performances de détection
+    sont comparables à celles de Wazuh sur les mêmes scénarios ?
+  };
+\end{tikzpicture}
+\end{center}
+
+\subsection{Hypothèses de travail}
+
+\begin{enumerate}
+  \item \textbf{H1 — Équivalence de détection.} Le moteur Python atteint un taux de
+        vrais positifs (TPR) $\geq$\,90\,\% et un taux de faux positifs (FPR)
+        $\leq$\,10\,\% sur les scénarios définis, sans différence statistiquement
+        significative avec Wazuh sur ces mêmes scénarios.
+  \item \textbf{H2 — Supériorité en ressources.} Le moteur Python consomme moins de
+        4\,Go de RAM en charge et présente une latence de détection inférieure
+        à celle de Wazuh sur le même matériel.
+  \item \textbf{H3 — Adaptabilité locale.} Les règles de corrélation peuvent être
+        écrites et modifiées par un utilisateur avec des compétences Python
+        intermédiaires, sans expertise SIEM spécialisée.
+\end{enumerate}
+
+% ════════════════════════════════════════════════════════════════
+\section{État de l'art}
+% ════════════════════════════════════════════════════════════════
+
+\subsection{Panorama des solutions existantes}
+
+\begin{table}[H]
+\centering
+\caption{Comparaison des catégories de solutions de détection}
+\small
+\begin{tabularx}{\textwidth}{L{2.8cm} C{2cm} C{2cm} L{5cm}}
+\toprule
+\rowcolor{darkblue}
+{\color{white}\textbf{Solution}} &
+{\color{white}\textbf{Coût}} &
+{\color{white}\textbf{RAM min.}} &
+{\color{white}\textbf{Pertinence contexte PME Togo}} \\
+\midrule
+Splunk Enterprise & Très élevé & 16\,Go+ & Hors de portée financière \\
+\midrule
+IBM QRadar & Très élevé & 24\,Go+ & Hors de portée financière \\
+\midrule
+\rowcolor{lightgray}
+Wazuh & Gratuit & 4\,Go+ & Viable techniquement, lourd en ressources \\
+\midrule
+Suricata (IDS réseau) & Gratuit & 1\,Go+ & Détection réseau uniquement, pas de corrélation \\
+\midrule
+\rowcolor{lightgray}
+Antivirus basiques & Variable & Faible & Aucune corrélation, pas de détection réseau \\
+\midrule
+\textbf{Mini-SOC Python} & \textbf{Gratuit} & \textbf{$<$4\,Go} & \textbf{Cible de ce projet} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{warningbox}[title={Pourquoi Norton est exclu du benchmark}]
+Un antivirus grand public (Norton, McAfee, Avast) est fondamentalement différent
+d'un moteur de corrélation stateful : il opère sur des signatures de fichiers et
+des heuristiques comportementales sur un seul poste, sans capacité de corréler
+des événements multi-sources dans le temps.
+Comparer ces deux catégories d'outils n'aurait pas de sens technique.
+Le benchmark retenu dans ce projet est \textbf{Wazuh uniquement},
+qui appartient à la même catégorie fonctionnelle (SIEM/corrélation d'événements).
+\end{warningbox}
+
+\subsection{Wazuh — comparant de référence}
+
+Wazuh est un SIEM open-source dérivé d'OSSEC, activement maintenu,
+utilisé en production dans des milliers d'organisations.
+Il comprend un agent déployé sur les hôtes supervisés, un manager
+centralisant les événements, et un indexer (OpenSearch) pour le stockage
+et la recherche.
+
+Ses atouts pour ce projet : gratuité totale, présence de règles de détection
+pré-écrites, documentation exhaustive, et usage croissant en Afrique
+dans des structures à budget limité.
+Sa limite principale : l'empreinte mémoire, notamment due à OpenSearch,
+qui nécessite au minimum 4 à 8\,Go de RAM en configuration productive.
+
+\subsection{Lacune identifiée}
+
+Aucun outil de corrélation stateful n'existe à ce jour qui soit :
+(a) entièrement open-source et gratuit,
+(b) déployable sur moins de 4\,Go de RAM,
+(c) dont les règles de détection soient lisibles et modifiables
+    par un développeur Python sans formation SIEM,
+(d) documenté avec des scénarios de menaces propres au contexte ouest-africain.
+
+Ce projet adresse directement ce manque.
+
+% ════════════════════════════════════════════════════════════════
+\section{Architecture et méthodologie}
+% ════════════════════════════════════════════════════════════════
+
+\subsection{Vue d'ensemble du pipeline}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  node distance=0.6cm and 1.0cm,
+  box/.style={
+    draw=midblue, fill=lightblue!30, rounded corners=5pt,
+    text width=2.6cm, align=center, minimum height=1.1cm,
+    font=\small
+  },
+  arrow/.style={-Stealth, thick, color=midblue},
+  label/.style={font=\scriptsize\itshape, color=darkgray},
+]
+
+\node[box] (logs)    {Logs système\\\& réseau};
+\node[box, right=of logs]  (collect) {Collecte\\\small rsyslog};
+\node[box, right=of collect] (norm)   {Normalisation\\JSON/ECS};
+\node[box, right=of norm]   (engine) {Moteur Python\\stateful};
+\node[box, right=of engine] (alert)  {Alertes\\\& réponse};
+
+\draw[arrow] (logs)    -- (collect);
+\draw[arrow] (collect) -- (norm);
+\draw[arrow] (norm)    -- (engine);
+\draw[arrow] (engine)  -- (alert);
+
+\node[label, below=0.25cm of logs]    {Sources};
+\node[label, below=0.25cm of collect] {Agrégation};
+\node[label, below=0.25cm of norm]    {Standardisation};
+\node[label, below=0.25cm of engine]  {Corrélation};
+\node[label, below=0.25cm of alert]   {Sortie};
+
+% Branche benchmark (en dessous)
+\node[box, fill=warningbg!60, draw=warningborder,
+      below=1.5cm of engine, text width=2.8cm] (wazuh)
+      {Wazuh\\Manager};
+
+\draw[-Stealth, thick, color=warningborder, dashed]
+  (norm.south) .. controls +(0,-0.9) and +(-1.2,0) .. (wazuh.west)
+  node[midway, label, left=2pt] {mêmes logs};
+
+\draw[-Stealth, thick, color=warningborder, dashed]
+  (wazuh.east) .. controls +(0.8,0) and +(0,-0.9) .. (alert.south)
+  node[midway, label, right=2pt] {benchmark};
+
+\end{tikzpicture}
+\caption{Pipeline Mini-SOC et position du benchmark Wazuh}
+\label{fig:pipeline}
+\end{figure}
+
+\subsection{Laboratoire virtualisé (Infrastructure as Code)}
+
+\subsubsection{Topologie réseau}
+
+Le laboratoire est entièrement isolé de l'Internet (réseaux VirtualBox
+en mode \texttt{Host-Only} et \texttt{Internal Network}).
+La topologie retenue est la suivante :
+
+\begin{table}[H]
+\centering
+\caption{Composants du laboratoire}
+\small
+\begin{tabularx}{\textwidth}{L{3.2cm} C{1.6cm} C{2.2cm} L{4.8cm}}
+\toprule
+\rowcolor{darkblue}
+{\color{white}\textbf{Composant}} &
+{\color{white}\textbf{Type}} &
+{\color{white}\textbf{IP}} &
+{\color{white}\textbf{Rôle}} \\
+\midrule
+Firewall / Routeur & VM Alpine & 192.168.100.2 & Routage, segmentation, filtrage \\
+\midrule
+\rowcolor{lightgray}
+Serveur collecte + moteur & Conteneur & 192.168.100.10 & Pipeline logs, moteur Python \\
+\midrule
+Cible SSH & Conteneur & 192.168.100.20 & Serveur SSH cible des attaques \\
+\midrule
+\rowcolor{lightgray}
+Machine attaquante & VM Kali & 192.168.100.50 & Simulation des scénarios \\
+\midrule
+Wazuh Manager/Indexer & VM Debian & 192.168.100.30 & Benchmark (phases 8--10) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{Allocation mémoire}
+
+Avec 16\,Go de RAM disponibles sur l'hôte Xubuntu, l'allocation est :
+
+\begin{table}[H]
+\centering
+\caption{Budget RAM du laboratoire}
+\small
+\begin{tabularx}{\textwidth}{L{5cm} C{2cm} C{2cm}}
+\toprule
+\rowcolor{darkblue}
+{\color{white}\textbf{Composant}} &
+{\color{white}\textbf{RAM allouée}} &
+{\color{white}\textbf{Phase active}} \\
+\midrule
+Firewall Alpine & 512\,Mo & 1--10 \\
+\rowcolor{lightgray}
+Serveur collecte + moteur & 1,5\,Go & 1--10 \\
+Cible SSH & 512\,Mo & 1--10 \\
+\rowcolor{lightgray}
+Machine attaquante Kali & 1\,Go & 1--10 \\
+Wazuh Manager & 2\,Go & 8--10 \\
+\rowcolor{lightgray}
+Wazuh Indexer (OpenSearch) & 2\,Go & 8--10 \\
+\midrule
+\textbf{Total phases 1--7} & \textbf{3,5\,Go} & — \\
+\rowcolor{lightgray}
+\textbf{Total phases 8--10} & \textbf{7,5\,Go} & — \\
+\textbf{Marge système hôte} & \textbf{$\geq$8\,Go} & — \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Scénarios d'attaque retenus}
+
+\begin{infobox}[title={Décision de scope — 2 scénarios uniquement}]
+Le projet se limite à deux scénarios d'attaque définis dès la semaine~0
+et figés jusqu'à la soutenance.
+Cette décision est délibérée : deux scénarios maîtrisés, bien documentés,
+avec des métriques précises, ont plus de valeur qu'une liste de scénarios
+bâclés. Tout scénario supplémentaire éventuel sera traité en annexe
+et clairement étiqueté « hors périmètre principal ».
+\end{infobox}
+
+\subsubsection{Scénario 1 — Brute-force SSH suivi d'une connexion réussie}
+
+\textbf{Vecteur local :} Attaque automatisée sur des serveurs SSH exposés,
+fréquente dans le contexte des petites structures togolaises dont les
+services sont directement accessibles via IP publique sans VPN.
+
+\textbf{Séquence d'événements :}
+\begin{enumerate}
+  \item Multiples tentatives de connexion SSH échouées depuis la même IP source
+        ($\geq$\,10 tentatives en moins de 60\,secondes).
+  \item Connexion SSH réussie depuis la même IP source dans les 120\,secondes
+        suivant la dernière tentative échouée.
+\end{enumerate}
+
+\textbf{Règle de corrélation formelle :}
+\[
+  \exists\, t_0 : \bigl|\{e \mid e.\mathit{type}=\texttt{ssh\_fail},\,
+  e.\mathit{src}=s,\, t_0 \leq e.t < t_0+60 \}\bigr| \geq 10
+  \;\wedge\;
+  \exists\, t_1 : e.\mathit{type}=\texttt{ssh\_ok},\, e.\mathit{src}=s,\,
+  t_0 \leq t_1 \leq t_0+180
+\]
+
+\subsubsection{Scénario 2 — Reconnaissance réseau suivie d'une exfiltration}
+
+\textbf{Vecteur local :} Attaque en deux temps visant des serveurs
+de fichiers internes, représentative des intrusions observées dans les
+PME de la sous-région (accès initial via credential faible, puis
+exfiltration vers service cloud ou IP externe).
+
+\textbf{Séquence d'événements :}
+\begin{enumerate}
+  \item Scan réseau large (SYN scan ou UDP scan) depuis une IP interne
+        vers au moins 20 hôtes en moins de 30\,secondes.
+  \item Transfert de données sortant vers une IP externe ($\geq$\,10\,Mo)
+        dans les 300\,secondes suivant le scan.
+\end{enumerate}
+
+\textbf{Règle de corrélation formelle :}
+\[
+  \exists\, t_0 :
+  \bigl|\{e \mid e.\mathit{type}=\texttt{scan},\, e.\mathit{src}=s,\,
+  t_0 \leq e.t < t_0+30 \}\bigr| \geq 20
+  \;\wedge\;
+  \exists\, t_1 : e.\mathit{type}=\texttt{transfer\_out},\,
+  e.\mathit{size} \geq 10^7,\, e.\mathit{src}=s,\,
+  t_0 \leq t_1 \leq t_0+300
+\]
+
+\subsection{Architecture du moteur Python}
+
+\subsubsection{Environnement technique et dépendances}
+
+Le moteur est développé et testé sous \textbf{Python~3.12}
+(version installée par défaut sur Ubuntu~24.04~LTS / Xubuntu~24.04,
+environnement de développement de ce projet).
+La version minimale requise est Python~3.10 (introduction des
+\emph{union types} \texttt{X | Y} utilisés dans les annotations).
+Toutes les dépendances sont fixées dans \texttt{requirements.txt}
+à la racine du dépôt :
+
+\begin{lstlisting}[language=bash, caption={requirements.txt -- dépendances exactes du moteur}]
+# requirements.txt -- Python 3.12 (min. 3.10)
+pyyaml>=6.0        # chargement et parsing des regles YAML
+watchdog>=4.0      # surveillance inotify des fichiers de logs
+jsonschema>=4.0    # validation du schema JSON des evenements
+pytest>=8.0        # tests unitaires du moteur FSM
+\end{lstlisting}
+
+\begin{table}[H]
+\centering
+\caption{Stack technique du moteur Python -- rôle de chaque dépendance}
+\small
+\begin{tabularx}{\textwidth}{L{2.5cm} C{2.2cm} L{7.3cm}}
+\toprule
+\rowcolor{darkblue}
+{\color{white}\textbf{Composant}} &
+{\color{white}\textbf{Version}} &
+{\color{white}\textbf{Rôle précis dans le moteur}} \\
+\midrule
+Python & 3.12 (min.\ 3.10) & Langage principal ; annotations de type \texttt{dict | None} requièrent 3.10+ \\
+\rowcolor{lightgray}
+PyYAML & $\geq$\,6.0 & Chargement des règles \texttt{*.yaml} depuis \texttt{engine/rules/} au démarrage \\
+watchdog & $\geq$\,4.0 & Surveillance en temps réel du répertoire de logs via \texttt{inotify} (Linux) ; déclenche le parser à chaque nouvelle ligne \\
+\rowcolor{lightgray}
+jsonschema & $\geq$\,4.0 & Validation du schéma des événements normalisés avant injection dans la FSM \\
+pytest & $\geq$\,8.0 & Tests unitaires : rejoue des séquences d'événements et vérifie les alertes générées \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{Choix du backend d'états}
+
+Deux options ont été évaluées pour le stockage des états de corrélation.
+
+\paragraph{Option A --- Redis (écarté).}
+Redis offre TTL natif, pub/sub et persistence RDB/AOF.
+Il est écarté pour trois raisons : (1)~dépendance externe non justifiée
+pour un moteur mono-serveur gérant deux scénarios ; (2)~overhead mémoire
+de 50--200\,Mo inutile pour un lab ; (3)~états opaques sans \texttt{redis-cli},
+ce qui alourdit les tests unitaires.
+Cette décision est réversible : si le projet évolue vers plusieurs
+sources de logs simultanées, Redis sera réévalué.
+
+\paragraph{Option B --- Dictionnaire Python avec persistence JSON (retenu).}
+Le moteur stocke les états actifs dans un dictionnaire Python en mémoire.
+\textbf{Le risque principal est la perte d'état au redémarrage} : si le
+processus plante, les attaques en cours de corrélation sont perdues.
+
+La réponse retenue est une \emph{persistence périodique sur JSON}
+avec reprise automatique au démarrage, implémentée dans la classe
+\texttt{StateStore} décrite ci-dessous.
+La fenêtre de perte maximale est bornée à 30\,secondes (paramétrable),
+ce qui est acceptable au regard des fenêtres de détection de
+60 à 300\,secondes définies dans les règles YAML.
+
+\begin{lstlisting}[language=Python,
+  caption={engine/state\_store.py -- Persistence JSON avec reprise au redémarrage}]
+# engine/state_store.py  --  Python 3.12
+import json, time, threading, pathlib
+
+SNAPSHOT_PATH = pathlib.Path("engine/state_snapshot.json")
+SNAPSHOT_INTERVAL = 30  # secondes entre chaque sauvegarde (parametrable)
+
+class StateStore:
+    """Dictionnaire d'etats avec persistence JSON periodique.
+
+    Au demarrage : recharge le snapshot existant et purge
+    les etats dont la fenetre temporelle est depassee.
+    En fonctionnement : sauvegarde toutes les SNAPSHOT_INTERVAL secondes
+    dans un thread daemon (n'empeche pas l'arret propre du processus).
+    Perte maximale en cas de crash : SNAPSHOT_INTERVAL secondes d'etats.
+    """
+
+    def __init__(self):
+        self._states: dict = {}
+        self._lock = threading.Lock()
+        self._load()          # reprise au demarrage
+        self._start_loop()    # sauvegarde periodique en arriere-plan
+
+    # -- Persistence --------------------------------------------------
+
+    def _load(self) -> None:
+        """Recharge le snapshot et purge les etats expires."""
+        if not SNAPSHOT_PATH.exists():
+            return
+        with open(SNAPSHOT_PATH) as f:
+            raw: dict = json.load(f)
+        now = time.time()
+        # Ne conserve que les etats dont la fenetre n'est pas depassee
+        self._states = {
+            k: v for k, v in raw.items()
+            if now - v["last_seen"] < v["window_seconds"]
+        }
+
+    def _save(self) -> None:
+        """Ecrit le snapshot sur disque (ecriture atomique via tmp)."""
+        tmp = SNAPSHOT_PATH.with_suffix(".tmp")
+        with self._lock:
+            with open(tmp, "w") as f:
+                json.dump(self._states, f, indent=2)
+        tmp.replace(SNAPSHOT_PATH)  # atomique sur POSIX
+
+    def _start_loop(self) -> None:
+        """Lance le thread de sauvegarde periodique (daemon)."""
+        def loop():
+            while True:
+                time.sleep(SNAPSHOT_INTERVAL)
+                self._save()
+        threading.Thread(target=loop, daemon=True).start()
+
+    # -- Interface publique -------------------------------------------
+
+    def get(self, key: str) -> dict | None:
+        return self._states.get(key)
+
+    def set(self, key: str, value: dict) -> None:
+        with self._lock:
+            self._states[key] = value
+
+    def delete(self, key: str) -> None:
+        with self._lock:
+            self._states.pop(key, None)
+\end{lstlisting}
+
+\begin{infobox}[title={Ce que ce mécanisme garantit et ne garantit pas}]
+\textbf{Garantit :}
+\begin{itemize}[topsep=0pt]
+  \item Reprise des états non expirés au redémarrage (crash ou mise à jour).
+  \item Fenêtre de perte bornée à 30\,s (paramétrable via \texttt{SNAPSHOT\_INTERVAL}).
+  \item Purge automatique des états dont la fenêtre temporelle est dépassée.
+  \item Écriture atomique via fichier temporaire + \texttt{os.replace} :
+        pas de snapshot corrompu en cas de crash pendant la sauvegarde.
+\end{itemize}
+\textbf{Ne garantit pas :}
+\begin{itemize}[topsep=0pt]
+  \item Scalabilité multi-processus (limitation connue, hors périmètre lab).
+  \item Durabilité sub-seconde (Redis serait requis).
+\end{itemize}
+\textbf{Conclusion :} approche acceptable pour le périmètre mono-serveur de ce projet.
+Décision documentée dans \texttt{docs/decisions.md} du dépôt Git.
+\end{infobox}
+
+\subsubsection{Structure des règles YAML}
+
+Les règles de corrélation sont externalisées dans des fichiers YAML,
+indépendants du code du moteur. Un exemple de règle pour le scénario~1 :
+
+\begin{lstlisting}[language=YAML, caption={Règle YAML — Scénario 1 : brute-force SSH}]
+# rules/ssh_bruteforce.yaml
+id: SSH_BRUTEFORCE_001
+name: "Brute-force SSH suivi d'une connexion reussie"
+description: >
+  Detecte une succession de tentatives SSH echouees
+  suivie d'une connexion reussie depuis la meme source.
+# -- Etape 1 : accumulation d'echecs --
+trigger:
+  event_type: ssh_auth_failed
+  threshold: 10          # >= 10 echecs
+  window_seconds: 60     # dans une fenetre de 60s
+  group_by: src_ip       # par IP source
+# -- Etape 2 : confirmation --
+escalation:
+  event_type: ssh_auth_success
+  same_field: src_ip     # meme IP source
+  within_seconds: 180    # dans les 3 minutes suivantes
+# -- Sortie --
+alert:
+  severity: HIGH
+  mitre_tactic: "TA0006"  # Credential Access
+  message: "Kill-chain SSH brute-force detectee depuis {src_ip}"
+\end{lstlisting}
+
+\subsubsection{Architecture du moteur}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  mod/.style={
+    draw=midblue, fill=lightblue!20, rounded corners=4pt,
+    text width=3cm, align=center, minimum height=1cm, font=\small
+  },
+  container/.style={
+    draw=darkgray, dashed, rounded corners=8pt,
+    inner sep=10pt, fill=lightgray!30
+  },
+  arrow/.style={-Stealth, thick, midblue},
+]
+
+\node[mod] (parser)   {Parser de logs\\\small(JSON/Syslog)};
+\node[mod, right=1.2cm of parser]  (norm)    {Normaliseur\\\small(ECS)};
+\node[mod, right=1.2cm of norm]    (fsm)     {FSM stateful\\\small(dict Python)};
+\node[mod, right=1.2cm of fsm]     (dispatch){Dispatcher\\\small(alertes)};
+
+\node[mod, above=0.8cm of fsm, fill=warningbg!40,
+      draw=warningborder, text width=2.6cm] (rules)
+      {Règles YAML\\\small(externalisées)};
+
+\draw[arrow] (parser)   -- (norm);
+\draw[arrow] (norm)     -- (fsm);
+\draw[arrow] (fsm)      -- (dispatch);
+\draw[-Stealth, thick, warningborder] (rules) -- (fsm);
+
+\begin{scope}[on background layer]
+  \node[container, fit=(parser)(norm)(fsm)(dispatch)(rules),
+        label={[font=\small\bfseries, color=darkgray]above:Moteur de corrélation}]
+        (engine) {};
+\end{scope}
+
+\end{tikzpicture}
+\caption{Modules internes du moteur de corrélation}
+\label{fig:engine}
+\end{figure}
+
+% ════════════════════════════════════════════════════════════════
+\section{Plan d'implémentation — 10 semaines}
+% ════════════════════════════════════════════════════════════════
+
+\begin{longtable}{C{1.5cm} L{3cm} L{7.5cm}}
+\caption{Plan d'implémentation détaillé} \label{tab:plan} \\
+\toprule
+\rowcolor{darkblue}
+{\color{white}\textbf{Sem.}} &
+{\color{white}\textbf{Phase}} &
+{\color{white}\textbf{Tâches principales}} \\
+\midrule
+\endfirsthead
+\toprule
+\rowcolor{darkblue}
+{\color{white}\textbf{Sem.}} &
+{\color{white}\textbf{Phase}} &
+{\color{white}\textbf{Tâches principales}} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r}{\small\itshape Suite page suivante\ldots}\\
+\endfoot
+\bottomrule
+\endlastfoot
+
+0 & Préparation & Dépôt Git + structure, schéma réseau, choix distributions, installation outils, décision VM/conteneur. \\
+\rowcolor{lightgray}
+1--2 & Topologie réseau IaC & Déploiement firewall Alpine, routage, segmentation. Docker Compose cibles + serveur collecte. Tests de connectivité. \\
+3 & Pipeline collecte & rsyslog + journald → collecte centralisée → normalisation JSON/ECS. \textbf{Isolation du dataset d'évaluation (30\%).} \\
+\rowcolor{lightgray}
+4 & Moteur Python — base & Parser logs, machine à états (dict Python), fenêtres temporelles, chargement règles YAML. Tests unitaires. \\
+5 & Scénario 1 + métriques & Simulation brute-force SSH. Mesure TPR/FPR. Ajustement seuils. \\
+\rowcolor{lightgray}
+6 & Scénario 2 + Wazuh & Simulation scan→exfiltration. \textbf{Déploiement Wazuh.} Calibration FP. Collecte métriques comparatives. \\
+7 & Mini-SOC complet & Exposition alertes (fichier structuré/API). Mécanisme de réponse minimal (optionnel). \\
+\rowcolor{lightgray}
+8 & Benchmark Wazuh & Exécution des mêmes scénarios sur Wazuh. Mesure TPR, FPR, latence, RAM/CPU. Utilisation du dataset d'évaluation isolé. \\
+9 & Analyse \& rapport & Comparaison chiffrée. Rédaction sections techniques. Visualisations. \\
+\rowcolor{lightgray}
+10 & Soutenance & Présentation + démonstration d'attaque/détection en direct (scénario~1 ou~2). \\
+
+\end{longtable}
+
+\begin{infobox}[title={Règle d'or — Dataset d'évaluation}]
+Le dataset d'évaluation (30\,\% des logs générés) est isolé en semaine~3,
+placé dans \texttt{datasets/eval/} et \textbf{jamais utilisé pendant le développement}.
+Il sert exclusivement à l'évaluation finale du moteur Python ET de Wazuh.
+Toute contamination de ce dataset invalide la comparaison et donc
+la validité scientifique du benchmark.
+\end{infobox}
+
+% ════════════════════════════════════════════════════════════════
+\section{Métriques d'évaluation}
+% ════════════════════════════════════════════════════════════════
+
+\subsection{Métriques de détection}
+
+Les métriques suivantes seront calculées pour chaque scénario,
+pour le moteur Python et pour Wazuh :
+
+\begin{align}
+  \text{TPR} &= \frac{VP}{VP + FN} \quad \text{(sensibilité)} \\
+  \text{FPR} &= \frac{FP}{FP + VN} \quad \text{(taux de faux positifs)} \\
+  \text{Précision} &= \frac{VP}{VP + FP}
+\end{align}
+
+où VP = vrai positif, FN = faux négatif, FP = faux positif, VN = vrai négatif.
+
+\subsection{Métriques de performance}
+
+\begin{itemize}
+  \item \textbf{Latence de détection :} délai entre le dernier événement
+        déclenchant et la génération de l'alerte (mesure en millisecondes,
+        moyenne sur 20 répétitions par scénario).
+  \item \textbf{RAM en charge :} consommation mémoire du processus Python
+        ou du stack Wazuh pendant l'exécution des scénarios (via \texttt{/proc}).
+  \item \textbf{CPU :} utilisation CPU moyenne sur la fenêtre de détection.
+\end{itemize}
+
+\subsection{Objectifs de conception (valeurs cibles)}
+
+\begin{warningbox}[title={Rappel — Valeurs cibles, pas résultats}]
+Le tableau ci-dessous présente des \textbf{objectifs de conception}.
+Les valeurs réelles mesurées les remplaceront dans le rapport final.
+Aucune de ces valeurs n'a été mesurée au moment de la rédaction de ce document.
+\end{warningbox}
+
+\begin{table}[H]
+\centering
+\caption{Objectifs de conception — à valider lors des tests}
+\small
+\begin{tabularx}{\textwidth}{L{3.5cm} C{2.2cm} C{2.2cm} C{2.2cm}}
+\toprule
+\rowcolor{darkblue}
+{\color{white}\textbf{Métrique}} &
+{\color{white}\textbf{Moteur Python}} &
+{\color{white}\textbf{Wazuh}} &
+{\color{white}\textbf{Source}} \\
+\midrule
+TPR (\%) & $\geq 90$ & À mesurer & Objectif H1 \\
+\rowcolor{lightgray}
+FPR (\%) & $\leq 10$ & À mesurer & Objectif H1 \\
+Latence (ms) & $<3\,000$ & À mesurer & Objectif H2 \\
+\rowcolor{lightgray}
+RAM en charge & $<4$\,Go & À mesurer & Objectif H2 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ════════════════════════════════════════════════════════════════
+\section{Impact et perspectives locales}
+% ════════════════════════════════════════════════════════════════
+
+\subsection{Adéquation au contexte togolais}
+
+Ce projet répond à une contrainte réelle du tissu économique togolais :
+la nécessité de sécuriser des infrastructures modestes avec des moyens limités.
+Les choix techniques reflètent cette contrainte à chaque niveau :
+
+\begin{itemize}
+  \item \textbf{Coût nul.} L'ensemble de la stack (Python, Docker,
+        Alpine Linux, Wazuh) est open-source et ne nécessite aucune licence.
+  \item \textbf{Empreinte mémoire maîtrisée.} Le moteur Python fonctionne
+        sous 4\,Go, compatible avec du matériel de seconde main
+        couramment disponible au Togo.
+  \item \textbf{Règles adaptables.} Les règles YAML peuvent être
+        rédigées et modifiées par un développeur avec des compétences
+        Python, sans formation SIEM spécialisée.
+  \item \textbf{Scénarios représentatifs.} Les deux scénarios retenus
+        (brute-force SSH, exfiltration) correspondent aux vecteurs
+        d'attaque les plus fréquents dans les PME de la sous-région
+        disposant de services exposés avec des credentials faibles.
+\end{itemize}
+
+\subsection{Limites}
+
+\begin{itemize}
+  \item \textbf{Pas de scalabilité entreprise.} Le moteur Python en mémoire
+        n'est pas conçu pour ingérer des milliers d'événements par seconde.
+        Il cible explicitement les PME avec un trafic modéré.
+  \item \textbf{Lab simulé vs production réelle.} Les métriques obtenues
+        en laboratoire pourront différer du comportement en environnement
+        de production réel (bruit de fond, anomalies inattendues).
+  \item \textbf{Projet solo.} L'étendue du projet est limitée par le fait
+        qu'un seul développeur en assure l'implémentation et les tests.
+\end{itemize}
+
+\subsection{Perspectives}
+
+\begin{itemize}
+  \item Collaboration avec l'ANCy (Agence Nationale de la Cybersécurité)
+        pour validation et éventuelle diffusion.
+  \item Déploiement pilote au sein de l'EPL Lomé sur
+        l'infrastructure réseau interne.
+  \item Extension à d'autres scénarios de menaces mobiles
+        (fraude Mobile Money, phishing WhatsApp) dans une version~2.
+  \item Contribution à un référentiel de règles de détection
+        contextualisées pour l'Afrique de l'Ouest.
+\end{itemize}
+
+% ════════════════════════════════════════════════════════════════
+\section{Conclusion}
+% ════════════════════════════════════════════════════════════════
+
+Ce projet démontre la faisabilité d'une approche de détection d'intrusion
+stateful, low-cost et adaptée au contexte des PME togolaises.
+En construisant un moteur de corrélation Python avec des règles externalisées
+et en le benchmarquant rigoureusement contre Wazuh, il produit
+à la fois un livrable technique concret et une analyse comparative
+méthodologiquement solide.
+
+Les compétences développées — architecture pipeline de données,
+programmation Python orientée sécurité, infrastructure as code,
+conduite de tests comparatifs — sont directement transférables
+à des rôles d'ingénieur SOC, d'analyste sécurité ou de consultant
+en cybersécurité, aussi bien au Togo que dans la sous-région
+ou à l'international.
+
+% ════════════════════════════════════════════════════════════════
+\nocite{*}
+\bibliography{refs}
+% ════════════════════════════════════════════════════════════════
+
+\newpage
+% ════════════════════════════════════════════════════════════════
+\appendix
+\section{Structure du dépôt Git}
+% ════════════════════════════════════════════════════════════════
+
+\begin{lstlisting}[language=bash, caption={Structure du dépôt mini-soc-togo}]
+mini-soc-togo/
+|---- infra/
+|   |---- docker-compose.yml      # Stack collecte + cibles
+|   \---- firewall/               # Config Alpine iptables
+|---- collector/
+|   |---- rsyslog.conf            # Config collecte
+|   \---- normalizer.py           # Pipeline JSON/ECS
+|---- engine/
+|   |---- core.py                 # Moteur FSM principal
+|   |---- loader.py               # Chargement regles YAML
+|   |---- rules/
+|   |   |---- ssh_bruteforce.yaml # Scenario 1
+|   |   \---- scan_exfil.yaml     # Scenario 2
+|   \---- tests/
+|       |---- test_ssh.py         # Tests unitaires S1
+|       \---- test_scan.py        # Tests unitaires S2
+|---- scenarios/
+|   |---- run_scenario1.sh        # Script attaque S1
+|   \---- run_scenario2.sh        # Script attaque S2
+|---- datasets/
+|   |---- dev/                    # 70% - developpement
+|   \---- eval/                   # 30% - NE PAS MODIFIER
+|---- wazuh/
+|   \---- custom-rules.xml        # Regles Wazuh equivalentes
+|---- results/
+|   \---- metrics.csv             # Resultats benchmark
+|---- report/
+|   |---- main.tex                # Ce document
+|   \---- refs.bib                # Bibliographie
+\---- docs/
+    |---- decisions.md            # Journal decisions archi
+    \---- network-topology.md     # Topologie reseau
+\end{lstlisting}
+
+% ════════════════════════════════════════════════════════════════
+\section{Règles de corrélation — Scénario 2}
+% ════════════════════════════════════════════════════════════════
+
+\begin{lstlisting}[language=YAML, caption={Règle YAML — Scénario 2 : scan → exfiltration}]
+# rules/scan_exfil.yaml
+id: SCAN_EXFIL_001
+name: "Reconnaissance reseau suivie d'une exfiltration"
+description: >
+  Detecte un scan reseau large depuis un hote interne
+  suivi d'un transfert de donnees sortant vers une IP externe.
+trigger:
+  event_type: network_scan
+  threshold: 20            # >= 20 hotes scanes
+  window_seconds: 30       # en moins de 30 secondes
+  group_by: src_ip
+escalation:
+  event_type: data_transfer_outbound
+  same_field: src_ip
+  min_bytes: 10000000      # >= 10 Mo
+  within_seconds: 300      # dans les 5 minutes suivantes
+alert:
+  severity: CRITICAL
+  mitre_tactic: "TA0010"  # Exfiltration
+  message: "Kill-chain scan+exfiltration depuis {src_ip}"
+\end{lstlisting}
+
+% ════════════════════════════════════════════════════════════════
+\section{Bibliographie — Sources à compléter}
+% ════════════════════════════════════════════════════════════════
+
+\begin{warningbox}[title={Sources à vérifier et compléter avant le rapport final}]
+Les références ci-dessous sont des pointeurs à valider.
+Chaque entrée doit être vérifiée et remplacée par une source accessible
+et citable (rapport officiel, publication académique, site institutionnel).
+\end{warningbox}
+
+Sources à investiguer :
+\begin{itemize}
+  \item Rapports annuels de l'ANCy (Agence Nationale de la Cybersécurité du Togo)
+  \item Rapports ITU sur l'index de cybersécurité mondial (GCI) — section Afrique
+  \item Études CEDEAO sur la cybersécurité des PME en Afrique de l'Ouest
+  \item Documentation officielle Wazuh : \url{https://documentation.wazuh.com}
+  \item MITRE ATT\&CK Enterprise : \url{https://attack.mitre.org}
+  \item RFC~5424 (Syslog protocol), RFC~8259 (JSON)
+\end{itemize}
+
+\end{document}

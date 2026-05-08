@@ -1,0 +1,182 @@
+# Comprendre les facilities syslog et le pipeline de logs
+
+## Le problème rencontré
+
+Samba était configuré avec `logging = syslog` dans `smb.conf`. Les logs apparaissaient
+dans `/var/log/syslog` sur la VM target, mais n'arrivaient pas sur le SOC malgré
+`syslog.*` dans `50-forward.conf`.
+
+---
+
+## Les facilities syslog — ce que c'est
+
+Syslog classe chaque message dans une **facility** — une catégorie qui indique quelle
+partie du système a émis le message. Ce n'est pas rsyslog qui décide, c'est le
+**processus émetteur** qui choisit sa facility quand il appelle l'API syslog.
+
+Facilities standards :
+
+```
+auth / authpriv  → authentification (SSH, PAM, sudo)
+daemon           → services système génériques (smbd, nginx, etc.)
+syslog           → messages internes de rsyslog lui-même
+kern             → kernel Linux
+cron             → tâches planifiées
+user             → applications utilisateur
+local0..local7   → facilities personnalisables par l'administrateur
+```
+
+Chaque facility est identifiée par un numéro dans le code source du kernel.
+La notation `facility.niveau` dans rsyslog (ex: `auth.warning`) filtre sur
+la facility ET le niveau de sévérité.
+
+---
+
+## Ce que Samba fait concrètement
+
+Quand `smbd` démarre avec `logging = syslog`, il appelle la fonction C `openlog()`
+puis `syslog()` du système. Il passe la facility `LOG_DAEMON` — c'est hardcodé
+dans le source C de Samba, indépendant de `smb.conf`.
+
+```c
+/* Source Samba simplifié */
+openlog("smbd", LOG_PID, LOG_DAEMON);
+syslog(LOG_DAEMON | LOG_WARNING, "Authentication failed for user %s", user);
+```
+
+Donc :
+- `syslog.*` dans rsyslog = messages internes de rsyslog lui-même → ne capture PAS smbd
+- `daemon.*` dans rsyslog = smbd, nmbd, et tous les autres démons système → capture smbd ✓
+
+---
+
+## La directive `syslog only = yes` dans smb.conf
+
+Sans cette directive, Samba écrit dans ses propres fichiers `/var/log/samba/log.*`
+directement via `fopen()`/`fprintf()` — sans passer par l'API syslog du kernel.
+rsyslog ne voit rien.
+
+```
+Sans syslog only :
+smbd → fopen() → /var/log/samba/log.smbd  ← rsyslog aveugle
+                                             SOC ne reçoit rien
+
+Avec syslog only = yes :
+smbd → syslog(LOG_DAEMON) → kernel → rsyslog → 50-forward.conf → SOC ✓
+```
+
+Avec `syslog only = yes`, Samba abandonne ses fichiers locaux et passe
+exclusivement par l'API syslog. C'est le prix à payer pour que rsyslog
+puisse intercepter et transmettre les messages.
+
+---
+
+## Pourquoi `/var/log/syslog` recevait les messages mais pas le SOC
+
+`/var/log/syslog` sur Debian est géré par la règle dans `50-default.conf` :
+```
+*.*;auth,authpriv.none  /var/log/syslog
+```
+
+Cette règle dit : tous les messages (`*.*`) sauf auth/authpriv → écrire dans
+`/var/log/syslog`. Donc `daemon.*` de smbd y arrivait bien.
+
+Mais `50-forward.conf` transmettait uniquement :
+```
+auth,authpriv.*  @10.0.1.10:514   ← SSH, PAM : OK
+syslog.*         @10.0.1.10:514   ← messages rsyslog internes : pas smbd
+```
+
+rsyslog écrivait localement dans `/var/log/syslog` mais n'envoyait pas au SOC.
+
+Schéma du flux rsyslog pour un message smbd (facility=daemon) :
+
+```
+Message smbd (facility=daemon, niveau=notice)
+        │
+        ▼
+rsyslog évalue les règles dans l'ordre alphanumérique :
+        │
+        ├── 10-remote.conf
+        │   └── fromhost-ip startswith '10.0.1.' ?
+        │       NON (message local, émis sur 127.0.0.1)
+        │       → règle ignorée, traitement continue
+        │
+        ├── 50-default.conf
+        │   └── *.*;auth,authpriv.none → /var/log/syslog
+        │       OUI (daemon.* correspond à *.*)
+        │       → écrit dans /var/log/syslog ✓
+        │       pas de "& stop" → traitement continue
+        │
+        └── 50-forward.conf
+            ├── auth,authpriv.* → NON (facility=daemon ≠ auth)
+            ├── syslog.*        → NON (facility=daemon ≠ syslog)
+            └── daemon.*        → ABSENT → message non transmis au SOC ✗
+```
+
+Après correction de `50-forward.conf` :
+
+```
+        └── 50-forward.conf
+            ├── auth,authpriv.* → NON
+            ├── syslog.*        → NON
+            └── daemon.*        → OUI → UDP 514 → SOC ✓
+```
+
+---
+
+## Config finale `50-forward.conf` sur target
+
+```
+auth,authpriv.*  @10.0.1.10:514   # SSH, PAM, sudo → scénario S1
+syslog.*         @10.0.1.10:514   # Messages internes rsyslog
+daemon.*         @10.0.1.10:514   # Samba (smbd, nmbd) → scénario S2
+```
+
+---
+
+## Méthode de diagnostic pour un service qui ne transmet pas ses logs
+
+1. Vérifier que le service écrit via syslog :
+   ```bash
+   sudo tail -20 /var/log/syslog | grep <service>
+   ```
+   Si le message y est → rsyslog le reçoit, le problème est dans le routage.
+   Si le message n'y est pas → le service n'utilise pas l'API syslog.
+
+2. Identifier la facility exacte :
+   Lire le prefixe dans `/var/log/syslog` ou consulter la documentation du service.
+   Sur Linux, les facilities courantes pour les services sont `daemon` ou `local0..7`.
+
+3. Ajouter la facility dans `50-forward.conf` :
+   ```bash
+   echo "daemon.*  @10.0.1.10:514" | sudo tee -a /etc/rsyslog.d/50-forward.conf
+   sudo systemctl restart rsyslog
+   ```
+
+---
+
+## Règle générale pour un lab SOC
+
+Transmettre ces trois facilities couvre 90% des événements de sécurité pertinents :
+
+| Facility | Contenu | Scénario |
+|---|---|---|
+| `auth,authpriv.*` | SSH, PAM, sudo, connexions | S1 brute-force SSH |
+| `daemon.*` | Samba, services réseau | S2 brute-force SMB |
+| `kern.*` | Événements kernel, netfilter | Détection de scans (si OPNsense) |
+
+`kern.*` sera ajouté si les logs OPNsense ou des événements kernel deviennent
+nécessaires pour S2.
+
+---
+
+## Lien avec l'architecture SOC
+
+Cette problématique (facility syslog) est un exemple concret de ce que les SIEMs
+professionnels gèrent via des agents dédiés (Filebeat, Wazuh agent, Splunk UF).
+Ces agents lisent directement les fichiers `/var/log/samba/log.*` sans dépendre
+de l'API syslog — plus robuste mais plus complexe à déployer.
+
+Pour ce projet, l'approche syslog native est suffisante et pédagogiquement plus
+riche : elle oblige à comprendre le routage des messages au niveau du kernel.

@@ -1,0 +1,20 @@
+# Environnements virtuels et outils
+.soc/
+.env
+.vagrant/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Système et Editeurs
+.DS_Store
+*.swp
+.idea/
+.vscode/
+*.bak
+
+# Logs (On ne veut pas commit les logs de test locaux)
+*.log
+/results/*.log

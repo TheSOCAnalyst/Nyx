@@ -1,0 +1,59 @@
+Syslog — ce qui a été fait, les problèmes, les solutions
+Le but
+La VM target génère des logs SSH (/var/log/auth.log). Le SOC doit les recevoir en temps réel pour que le moteur de corrélation puisse détecter un brute-force. Le protocole utilisé est syslog sur UDP port 514.
+Le flux visé : target (10.0.1.20) → UDP 514 → SOC (10.0.1.10) → /var/log/remote/debian.log
+
+Côté target — envoyer les logs
+Fichier /etc/rsyslog.d/50-forward.conf :
+auth,authpriv.* @10.0.1.10:514
+Décomposition :
+
+auth,authpriv.* — les facilities syslog d'authentification (connexions SSH, sudo, PAM). Le .* signifie tous les niveaux de sévérité (debug, info, warning, etc.)
+@ — envoyer via UDP. @@ serait TCP
+10.0.1.10:514 — destination : le SOC sur le port syslog standard
+
+Pourquoi seulement auth,authpriv et pas tout ? Transmettre kern.*, cron.*, daemon.* etc. n'apporte rien pour S1 ni S2 et surcharge le collecteur inutilement.
+
+Côté SOC — recevoir et écrire les logs
+Fichier /etc/rsyslog.d/10-remote.conf :
+$template RemoteLogs,"/var/log/remote/%HOSTNAME%.log"
+if $fromhost-ip startswith '10.0.1.' then ?RemoteLogs
+& stop
+Décomposition ligne par ligne :
+$template RemoteLogs,"/var/log/remote/%HOSTNAME%.log"
+Déclare un template nommé RemoteLogs. Un template rsyslog définit où et comment écrire un message. %HOSTNAME% est une variable rsyslog remplacée dynamiquement par le nom de la machine source — les logs de debian iront dans debian.log, ceux de opnsense dans opnsense.log, etc.
+if $fromhost-ip startswith '10.0.1.' then ?RemoteLogs
+Condition : si l'IP source du message commence par 10.0.1. (tout le sous-réseau lab), alors écrire dans le fichier défini par le template RemoteLogs. Le ? devant RemoteLogs signifie "utilise ce template comme destination fichier".
+& stop
+Après avoir écrit le message, arrêter le traitement de ce message. Sans cette ligne, rsyslog continuerait à appliquer les règles suivantes — le message serait aussi écrit dans /var/log/syslog ou /var/log/auth.log locaux, ce qui est du doublon inutile.
+Pour que rsyslog écoute sur UDP 514, deux lignes sont aussi nécessaires dans la config (déjà en place sur le SOC) :
+module(load="imudp")
+input(type="imudp" port="514")
+
+Les trois problèmes rencontrés
+Problème A — Les logs arrivent mais ne sont pas écrits
+tcpdump montrait les paquets UDP arriver sur le SOC, mais /var/log/remote/ restait vide.
+Cause : rsyslog charge les fichiers .d/ par ordre alphanumérique. 50-default.conf était traité avant la règle RemoteLogs. Ce fichier contient auth,authpriv.* /var/log/auth.log sans & stop — il consommait les messages distants et les écrivait dans auth.log local. Les messages n'atteignaient jamais la règle RemoteLogs.
+Solution : nommer le fichier 10-remote.conf pour qu'il soit chargé en premier, avant 50-default.conf.
+Problème B — Template non trouvé
+rsyslogd: Could not find template 'RemoteLogs' - action disabled
+Cause : le template était dans rsyslog.conf, la règle dans 10-remote.conf. rsyslog chargeait 10-remote.conf en premier et référençait un template pas encore défini.
+Solution : mettre template et règle dans le même fichier.
+Problème C — Permission denied
+rsyslogd: file '/var/log/remote/debian.log': open error: Permission denied
+Cause : /var/log/remote/ créé par soc.sh avec mkdir -p exécuté en root → propriétaire root:root. rsyslog tourne sous l'utilisateur système syslog (groupe adm) — pas le droit d'écrire.
+Solution :
+bashsudo chown -R syslog:adm /var/log/remote/
+sudo chmod 755 /var/log/remote/
+
+Vérification du pipeline
+bash# Depuis target — injecter un message de test
+logger -p auth.warning -t TEST "message-de-test"
+
+# logger : outil qui envoie un message syslog manuellement
+# -p auth.warning : facility "auth", niveau "warning"
+# -t TEST : tag du message (apparaît dans le log)
+
+# Depuis SOC — vérifier la réception
+grep "message-de-test" /var/log/remote/debian.log
+Si la ligne apparaît, les trois étapes fonctionnent : target envoie, le réseau transporte, le SOC reçoit et écrit.

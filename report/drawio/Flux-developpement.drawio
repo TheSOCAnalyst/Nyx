@@ -1,0 +1,82 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.6.1 Chrome/142.0.7444.265 Electron/39.8.0 Safari/537.36" version="29.6.1">
+  <diagram name="Page-1" id="OR_WxvUifNQNkKayTPZa">
+    <mxGraphModel dx="1397" dy="870" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="4JQKVmvTXuunbPHPzRdl-1" parent="1" style="swimlane;whiteSpace=wrap;html=1;fontSize=15;" value="Hôte Xubuntu" vertex="1">
+          <mxGeometry height="420" width="690" x="40" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="4JQKVmvTXuunbPHPzRdl-3" parent="4JQKVmvTXuunbPHPzRdl-1" style="swimlane;startSize=0;fontSize=15;" value="" vertex="1">
+          <mxGeometry height="200" width="200" x="40" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="4JQKVmvTXuunbPHPzRdl-5" parent="4JQKVmvTXuunbPHPzRdl-3" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=15;" value="Dossier local&amp;nbsp;&lt;div&gt;~/projets/SocProject/&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;- engine/&lt;/div&gt;&lt;div&gt;-collector/&lt;/div&gt;&lt;div&gt;scenarios/&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="150" width="160" x="20" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="4JQKVmvTXuunbPHPzRdl-6" parent="4JQKVmvTXuunbPHPzRdl-1" style="swimlane;startSize=0;fontSize=15;" value="" vertex="1">
+          <mxGeometry height="200" width="200" x="400" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="4JQKVmvTXuunbPHPzRdl-8" parent="4JQKVmvTXuunbPHPzRdl-6" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=15;" value="VS Code avec extension &quot;Remote - SSH &quot;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Le code sera édité ici pour rapidité et confort&amp;nbsp;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="150" x="20" y="85" as="geometry" />
+        </mxCell>
+        <mxCell id="4JQKVmvTXuunbPHPzRdl-10" edge="1" parent="4JQKVmvTXuunbPHPzRdl-1" source="4JQKVmvTXuunbPHPzRdl-3" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;fontSize=15;" target="4JQKVmvTXuunbPHPzRdl-6" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="360" y="440" as="sourcePoint" />
+            <mxPoint x="410" y="390" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="4JQKVmvTXuunbPHPzRdl-11" edge="1" parent="1" source="4JQKVmvTXuunbPHPzRdl-6" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;fontSize=15;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="541" y="510" as="sourcePoint" />
+            <mxPoint x="540" y="750" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="4JQKVmvTXuunbPHPzRdl-12" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=15;" value="Tunnel SSH&amp;nbsp;" vertex="1">
+          <mxGeometry height="30" width="60" x="550" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="4JQKVmvTXuunbPHPzRdl-13" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=15;" value="Synchronisation automatique" vertex="1">
+          <mxGeometry height="30" width="60" x="570" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="4JQKVmvTXuunbPHPzRdl-14" parent="1" style="swimlane;whiteSpace=wrap;html=1;fontSize=15;" value="VM Soc Ubuntu server" vertex="1">
+          <mxGeometry height="450" width="650" x="200" y="750" as="geometry" />
+        </mxCell>
+        <mxCell id="4JQKVmvTXuunbPHPzRdl-15" parent="4JQKVmvTXuunbPHPzRdl-14" style="swimlane;startSize=0;fontSize=15;" value="" vertex="1">
+          <mxGeometry height="310" width="580" x="50" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="4JQKVmvTXuunbPHPzRdl-17" parent="4JQKVmvTXuunbPHPzRdl-15" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=15;" value="Copie synchronisée du code via VS Code Remote&lt;div&gt;(/home/projects/....)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="440" x="70" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="4JQKVmvTXuunbPHPzRdl-31" edge="1" parent="4JQKVmvTXuunbPHPzRdl-15" source="4JQKVmvTXuunbPHPzRdl-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=15;" target="4JQKVmvTXuunbPHPzRdl-25">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="4JQKVmvTXuunbPHPzRdl-18" parent="4JQKVmvTXuunbPHPzRdl-15" style="swimlane;startSize=0;fontSize=15;" value="" vertex="1">
+          <mxGeometry height="130" width="130" x="30" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="4JQKVmvTXuunbPHPzRdl-19" parent="4JQKVmvTXuunbPHPzRdl-18" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=15;" value="Moteur Python en cours d&#39; exécution&amp;nbsp;" vertex="1">
+          <mxGeometry height="80" width="120" x="10" y="25" as="geometry" />
+        </mxCell>
+        <mxCell id="4JQKVmvTXuunbPHPzRdl-34" edge="1" parent="4JQKVmvTXuunbPHPzRdl-15" source="4JQKVmvTXuunbPHPzRdl-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="4JQKVmvTXuunbPHPzRdl-28">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="4JQKVmvTXuunbPHPzRdl-25" parent="4JQKVmvTXuunbPHPzRdl-15" style="swimlane;startSize=0;fontSize=15;" value="" vertex="1">
+          <mxGeometry height="130" width="125" x="215" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="4JQKVmvTXuunbPHPzRdl-26" parent="4JQKVmvTXuunbPHPzRdl-25" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=15;" value="Collecteur de logs rsyslog" vertex="1">
+          <mxGeometry height="80" width="110" x="5" y="25" as="geometry" />
+        </mxCell>
+        <mxCell id="4JQKVmvTXuunbPHPzRdl-28" parent="4JQKVmvTXuunbPHPzRdl-15" style="swimlane;startSize=0;fontSize=15;" value="" vertex="1">
+          <mxGeometry height="130" width="150" x="420" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="4JQKVmvTXuunbPHPzRdl-29" parent="4JQKVmvTXuunbPHPzRdl-28" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=15;" value="Scénarios d&#39;attaque (scripts)" vertex="1">
+          <mxGeometry height="80" width="120" x="10" y="25" as="geometry" />
+        </mxCell>
+        <mxCell id="4JQKVmvTXuunbPHPzRdl-16" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;pre style=&quot;font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-size-adjust: none; font-kerning: auto; font-optical-sizing: auto; font-feature-settings: normal; font-variation-settings: normal; font-variant-position: normal; font-variant-emoji: normal; font-stretch: normal; font-size: 13px; line-height: 22px; font-family: Menlo, Monaco, Consolas, &amp;quot;Cascadia Mono&amp;quot;, &amp;quot;Ubuntu Mono&amp;quot;, &amp;quot;DejaVu Sans Mono&amp;quot;, &amp;quot;Liberation Mono&amp;quot;, &amp;quot;JetBrains Mono&amp;quot;, &amp;quot;Fira Code&amp;quot;, Cousine, &amp;quot;Roboto Mono&amp;quot;, &amp;quot;Courier New&amp;quot;, Courier, sans-serif, system-ui; overflow: auto; text-wrap-mode: wrap; word-break: break-all; padding: 16px; color: rgb(249, 250, 251); text-align: start; margin: 0px !important;&quot;&gt;&lt;br&gt;&lt;/pre&gt;" vertex="1">
+          <mxGeometry height="30" width="290" x="760" y="1160" as="geometry" />
+        </mxCell>
+        <mxCell id="4JQKVmvTXuunbPHPzRdl-27" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=15;" value="VM allumée en headless ,&amp;nbsp; LE CODE S&#39; EXECUTE ICI&amp;nbsp;" vertex="1">
+          <mxGeometry height="30" width="410" x="340" y="1150" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
