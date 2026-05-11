@@ -21,6 +21,8 @@ if $fromhost-ip != '127.0.0.1' then ?RemoteLogs
 EOF
 
 mkdir -p /var/log/remote
+chown syslog:adm /var/log/remote/
+chmod 755 /var/log/remote/
 systemctl restart rsyslog
 
 echo "[soc] Ajout utilisateur vagrant au groupe docker..."
