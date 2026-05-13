@@ -7,6 +7,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
+*.pyo
 
 # Système et Editeurs
 .DS_Store
