@@ -1,6 +1,6 @@
 # Semaine 1 — Déploiement du laboratoire et validation du pipeline de logs
 
-**Période** : 18 avril – 8 mai 2026  
+**Période** : 18 avril – 11 mai 2026  
 **Statut** : Terminée
 
 ---
@@ -8,17 +8,22 @@
 ## Ce qui a été fait
 
 - Déploiement de la VM SOC via Vagrant (box `bento/ubuntu-24.04`, provider libvirt)
-- Création manuelle des VMs target (Debian 12), OPNsense 26.1.2 et attacker (Kali 2026.1)
+- Création manuelle des VMs target (Debian 12), OPNsense et attacker (Kali 2026.1)
   via virt-manager — abandon de Vagrant pour ces trois VMs (voir S1-D1)
 - Configuration et validation du réseau isolé libvirt (`10.0.1.0/24`)
 - Configuration du pipeline syslog SSH : target → SOC, validation end-to-end
-- Snapshot OPNsense post-configuration (virt-manager, mode externe)
-- Validation de la connectivité inter-VMs
-- Résolution erreur démarrage VM : réseaux libvirt passés en autostart (voir Obstacle 6)
 - IP target fixée en statique `10.0.1.20` — double IP DHCP+static résolue (voir Obstacle 7)
 - Déploiement Samba sur target (2 partages privés + 1 commun, 4 utilisateurs, SMB3 chiffré)
 - Extension pipeline syslog : ajout facility `daemon.*` pour transmission logs Samba → SOC
 - Validation pipeline SMB end-to-end : connexions réussies et échecs NTLMv2 visibles sur SOC
+- Validation chrony sur target et Kali
+- Validation outils Kali (nmap, hydra, crackmapexec, smbclient)
+- IP Kali fixée en statique `10.0.1.50` sur `eth1` (voir S1-D6)
+- Installation propre OPNsense 26.1.6 sur disque qcow2 dédié (voir Obstacles 9–14 et S1-D7)
+- Configuration LAN OPNsense : `10.0.1.1/24`, WAN DHCP (NAT libvirt)
+- Configuration syslog OPNsense → SOC : UDP, 10.0.1.10:514, toutes facilities/niveaux
+- Validation pipeline syslog OPNsense → SOC : filterlog visible sur SOC
+- Snapshots `post-semaine1` sur les 4 VMs
 
 ---
 
@@ -26,22 +31,23 @@
 
 | Composant | OS | RAM | IP lab | IP management | Rôle |
 |---|---|---|---|---|---|
-| Firewall | OPNsense 26.1.2 | 1 Go | 10.0.1.1 | — | Routage, logs pare-feu |
+| Firewall | OPNsense 26.1.6 | 1 Go | 10.0.1.1 | — | Routage, logs pare-feu |
 | SOC | Ubuntu Server 24.04 | 6 Go | 10.0.1.10 | 192.168.121.188 | Collecte logs, moteur Python |
 | Target | Debian 12.13 | 1 Go | 10.0.1.20 | 192.168.121.23 | Cible SSH + Samba, logs auth+daemon |
-| Attacker | Kali Linux 2026.1 | 2 Go | 10.0.1.190 | — | Simulation scénarios |
+| Attacker | Kali Linux 2026.1 | 2 Go | 10.0.1.50 | 192.168.121.69 | Simulation scénarios |
 
-Réseau lab : `10.0.1.0/24`, réseau libvirt `isolated` (NAT vers hôte pour mises à jour).  
-Réseau management : `192.168.121.0/24`, réseau libvirt `vagrant-libvirt`.
+Réseau lab : `10.0.1.0/24`, réseau libvirt `isolated`.  
+Réseau management : `192.168.121.0/24`, réseau libvirt `vagrant-libvirt`.  
+Noms de domaine libvirt : `infrastructure_soc`, `debian12`, `Kali`, `Opnsense`.
 
-Note version OPNsense : plan initial prévoyait 24.7, version installée 26.1.2 (dernière
-disponible à la date d'installation). Fonctionnellement identique pour ce projet.
+Note version OPNsense : plan initial prévoyait 24.7, version installée 26.1.6 (dernière
+disponible à la date de réinstallation). Fonctionnellement identique pour ce projet.
 
 ---
 
 ## Décisions de déploiement
 
-Voir `decisions.md` — entrées S1-D1 à S1-D5.
+Voir `decisions.md` — entrées S1-D1 à S1-D7.
 
 ---
 
@@ -191,9 +197,6 @@ mais `grep smb /var/log/remote/debian.log` ne retourne rien sur le SOC.
 source C de smbd via `openlog(LOG_DAEMON)`). Le fichier `50-forward.conf` ne
 transmettait que `auth,authpriv.*` et `syslog.*` — `daemon.*` était absent.
 
-`syslog.*` capture les messages internes de rsyslog lui-même, pas les démons système.
-`daemon.*` est la facility pour tous les services système génériques (smbd, nmbd, etc.).
-
 **Solution** :
 ```bash
 sudo tee /etc/rsyslog.d/50-forward.conf <<'EOF'
@@ -204,19 +207,122 @@ EOF
 sudo systemctl restart rsyslog
 ```
 
-**Validation** :
-```bash
-# Depuis hôte
-smbclient //10.0.1.20/direction -U dir1%MotDePasseFaux -m SMB3 -c "ls"
+---
 
-# Depuis SOC
-grep "NT_STATUS_WRONG_PASSWORD" /var/log/remote/debian.log | tail -3
+### Obstacle 9 — OPNsense tourne en live media : configuration non persistée
+
+**Symptôme** : Bannière au login web :
+```
+You are currently running in live media mode.
+A reboot will reset the configuration.
+```
+Toute configuration IP ou syslog disparaît au reboot.
+
+**Cause** : La VM OPNsense avait été créée en pointant directement sur le fichier
+`.img` comme disque source (avec backing store). Il n'y avait pas de disque virtuel
+dédié — OPNsense tournait en read-only depuis l'image live, les écritures étaient
+perdues à chaque arrêt.
+
+**Diagnostic** :
+```bash
+virsh --connect qemu:///system domblklist Firewall
+# Target   Source
+# vda      /home/gael/Downloads/OPNsense-26.1.2-vga-amd64.post-install-base
 ```
 
-**À retenir** : Quand un service ne transmet pas ses logs malgré `logging = syslog`,
-identifier sa facility dans `/var/log/syslog` puis l'ajouter à `50-forward.conf`.
-Pour un lab SOC, transmettre `auth,authpriv.*` + `daemon.*` + `kern.*` couvre
-90% des événements de sécurité pertinents.
+**Solution** : installation propre sur disque dédié (voir Obstacles 10–14).
+
+---
+
+### Obstacle 10 — Installateur VGA refuse le disque : taille minimale non satisfaite
+
+**Symptôme** :
+```
+The minimum size 4GB was not met
+```
+
+**Cause** : Le seul disque visible (`vtbd0`) était l'image live de 2 Go — pas un
+disque d'installation cible. L'installateur VGA cherche un disque cible distinct.
+
+**Tentative** : ajout d'un disque qcow2 de 8 Go via `attach-disk` à chaud.
+L'installateur voyait bien `vtbd1` (8 Go), mais échouait avec `Partition destroy failed`
+car le disque avait été attaché pendant que la VM tournait (kernel FreeBSD ne le
+voit pas proprement pour le partitionnement).
+
+**Décision** : abandonner l'image VGA live, utiliser l'ISO DVD standard (voir S1-D7).
+
+---
+
+### Obstacle 11 — Suppression VM bloquée : snapshot existant + volume non managé
+
+**Symptôme** :
+```
+error: Requested operation is not valid: cannot delete inactive domain
+with 1 snapshots
+error: Storage volume 'vdb' is not managed by libvirt. Remove it manually.
+```
+
+**Solution** :
+```bash
+# Supprimer le snapshot bloquant
+virsh --connect qemu:///system snapshot-delete Firewall --snapshotname post-install-base
+
+# Supprimer le disque ajouté manuellement
+sudo rm /var/lib/libvirt/images/opnsense.qcow2
+
+# Undefine — le volume vda (.img) est supprimé automatiquement
+virsh --connect qemu:///system undefine Firewall --remove-all-storage
+```
+
+Le message d'erreur résiduel sur `vdb` est sans conséquence (fichier déjà supprimé).
+
+---
+
+### Obstacle 12 — ISO DVD décompressée introuvable : `.img.bz2` uniquement disponible
+
+**Symptôme** : Seul `/home/gael/Downloads/OPNsense-26.1.2-vga-amd64.img.bz2` restait.
+L'image `.img` avait été supprimée par `undefine --remove-all-storage`.
+
+**Solution** : Téléchargement et décompression de l'ISO DVD :
+```bash
+# (téléchargement préalable)
+bunzip2 -k OPNsense-26.1.6-dvd-amd64.iso.bz2
+# Résultat : OPNsense-26.1.6-dvd-amd64.iso (~900 Mo)
+```
+
+Note : version 26.1.6 au lieu de 26.1.2 — plus récente, fonctionnellement identique.
+
+---
+
+### Obstacle 13 — VM ne boote pas après installation : `No bootable device`
+
+**Symptôme** :
+```
+Boot failed: Could not read from CDROM (code 0003)
+No bootable device.
+```
+
+**Cause** : L'ISO DVD était encore référencée comme CDROM dans la config VM.
+La VM essayait de booter sur le CDROM (déconnecté après installation) avant le disque.
+
+**Solution** : Dans virt-manager → Boot Options :
+- `VirtIO Disk 1` en premier dans l'ordre de boot
+- `SATA CDROM 1` : déconnecter le media (vider la source)
+
+---
+
+### Obstacle 14 — Partition scheme : `Partition destroy failed` avec GPT sur disque vierge
+
+**Symptôme** : L'installateur DVD (FreeBSD bsdinstall) échouait lors du partitionnement
+avec GPT sur le disque `vtbd0`.
+
+**Cause probable** : Schéma GPT incompatible avec le mode BIOS legacy (SeaBIOS)
+de la VM KVM. La VM démarrait en mode BIOS, pas UEFI.
+
+**Solution** : Sélectionner **MBR** (DOS Partitions) au lieu de GPT dans
+l'écran "Partition Scheme". MBR est compatible SeaBIOS sans configuration UEFI.
+
+**Résultat** : Installation complète, reboot sur disque, LAN `10.0.1.1/24` persisté. ✓
 
 ---
 
@@ -262,12 +368,12 @@ Pour un lab SOC, transmettre `auth,authpriv.*` + `daemon.*` + `kern.*` couvre
    directory mask = 2777
 ```
 
-### rsyslog (`/etc/rsyslog.d/50-forward.conf`)
+### rsyslog target (`/etc/rsyslog.d/50-forward.conf`)
 
 ```
-auth,authpriv.*  @10.0.1.10:514
-syslog.*         @10.0.1.10:514
-daemon.*         @10.0.1.10:514
+auth,authpriv.*  @10.0.1.10:514   # SSH, PAM, sudo
+syslog.*         @10.0.1.10:514   # Messages internes rsyslog
+daemon.*         @10.0.1.10:514   # Samba (smbd, nmbd) et autres démons
 ```
 
 ### Utilisateurs et partages
@@ -283,7 +389,7 @@ Mot de passe Samba : `Samba2026!` (lab uniquement).
 
 ---
 
-## Configuration finale rsyslog — SOC
+## Configuration finale — SOC
 
 ### `/etc/rsyslog.d/10-remote.conf`
 
@@ -293,38 +399,49 @@ if $fromhost-ip startswith '10.0.1.' then ?RemoteLogs
 & stop
 ```
 
+### Permissions `/var/log/remote/`
+
+```bash
+chown syslog:adm /var/log/remote/
+chmod 755 /var/log/remote/
+```
+
 ---
 
-## Configuration OPNsense
+## Configuration finale — OPNsense
 
-### Interfaces assignées
+### Interfaces
 
 | Interface | Carte | Réseau libvirt | IP |
 |---|---|---|---|
-| LAN | vtnet0 (52:54:00:97:5e:ee) | isolated | 10.0.1.1/24 |
-| WAN | vtnet1 (52:54:00:e4:7d:70) | default (NAT) | DHCP |
+| LAN | vtnet0 | isolated | 10.0.1.1/24 |
+| WAN | vtnet1 | default (NAT) | DHCP (192.168.122.x) |
 
-### Syslog vers SOC (à configurer semaine 2)
+### Syslog remote (System → Settings → Logging → Remote)
 
+| Champ | Valeur |
+|---|---|
+| Enabled | ✓ |
+| Transport | UDP(4) |
+| Hostname | 10.0.1.10 |
+| Port | 514 |
+| Levels | debug, info, notice, warn, error, critical, alert, emergency |
+| Facilities | toutes (Nothing selected = all) |
+| Applications | toutes (Nothing selected = all) |
+
+Note : tous les niveaux sélectionnés pour le lab — filtrage des niveaux
+non pertinents (debug, info) délégué au moteur Python.
+
+Format des logs firewall reçus sur SOC (`filterlog`) :
 ```
-System → Settings → Logging / Targets
-Destination : 10.0.1.10:514 (UDP)
-Niveau : Notice et supérieur
+2026-05-11T22:17:16+00:00 OPNsense.internal filterlog[56373]:
+76,,,uuid,vtnet1,match,pass,out,4,0xb8,,64,29973,0,none,17,udp,76,
+192.168.122.114,176.97.192.150,123,123,56
 ```
 
 ---
 
-## Pourquoi chrony sur toutes les VMs
-
-Le moteur de corrélation mesure des fenêtres temporelles précises :
-- S1 : fenêtre de 60 secondes pour les échecs SSH
-- S2 : fenêtre de 30 secondes pour le scan réseau
-
-Une dérive de 5 secondes sur 60 secondes = 8% d'erreur → faux négatifs.
-
----
-
-## Validation GO/NO-GO semaine 1
+## Validation GO/NO-GO — état final semaine 1
 
 ### SOC (Ubuntu 24.04)
 
@@ -333,7 +450,7 @@ chronyc tracking | grep "System time"     # NTP synchronisé
 ss -ulnp | grep 514                        # rsyslog écoute UDP 514
 python3 --version                          # Python 3.12.x
 docker info 2>/dev/null | head -3          # Docker opérationnel
-ls /var/log/remote/                        # Répertoire présent
+ls -ld /var/log/remote/                    # drwxr-xr-x syslog adm
 ```
 
 Résultat : **5/5 GO** ✓
@@ -342,13 +459,34 @@ Résultat : **5/5 GO** ✓
 
 ```bash
 ip addr show enp2s0                        # 10.0.1.20/24 statique
-chronyc tracking | grep "System time"     # NTP synchronisé
+chronyc tracking | grep "System time"     # 0.000000006 seconds slow ✓
 cat /etc/rsyslog.d/50-forward.conf         # 3 facilities configurées
 sudo sshd -T | grep passwordauthentication # yes
 sudo systemctl is-active smbd             # active
 ```
 
 Résultat : **5/5 GO** ✓
+
+### Kali (2026.1)
+
+```bash
+ip addr show eth1                          # 10.0.1.50/24 statique ✓
+chronyc tracking | grep "System time"     # 0.000081799 seconds fast ✓
+which nmap hydra crackmapexec smbclient   # /usr/bin/* tous présents ✓
+nmap --version                            # 7.99 ✓
+```
+
+Résultat : **4/4 GO** ✓
+
+### OPNsense (26.1.6)
+
+```
+Console : LAN (vtnet0) -> v4: 10.0.1.1/24   ✓ (persisté après reboot)
+Web GUI  : https://10.0.1.1 accessible        ✓
+Syslog remote configuré vers 10.0.1.10:514   ✓
+```
+
+Résultat : **3/3 GO** ✓
 
 ### Pipeline syslog SSH end-to-end
 
@@ -365,7 +503,7 @@ Résultat : **GO** ✓
 ### Pipeline syslog Samba end-to-end
 
 ```bash
-# Depuis hôte — échec d'auth SMB
+# Depuis hôte
 smbclient //10.0.1.20/direction -U dir1%MotDePasseFaux -m SMB3 -c "ls"
 # Depuis SOC
 grep "NT_STATUS_WRONG_PASSWORD" /var/log/remote/debian.log | tail -3
@@ -374,43 +512,43 @@ grep "NT_STATUS_WRONG_PASSWORD" /var/log/remote/debian.log | tail -3
 
 Résultat : **GO** ✓
 
-### Isolation des partages Samba
+### Pipeline syslog OPNsense end-to-end
 
 ```bash
-# dir1 accède à direction
-smbclient //10.0.1.20/direction -U dir1%Samba2026! -m SMB3 -c "ls"  # OK
-# tech1 bloqué sur direction
-smbclient //10.0.1.20/direction -U tech1%Samba2026! -m SMB3 -c "ls" # NT_STATUS_ACCESS_DENIED
-# tech1 accède à commun
-smbclient //10.0.1.20/commun -U tech1%Samba2026! -m SMB3 -c "ls"    # OK
-```
-
-Résultat : **3/3 GO** ✓
-
-### Réseaux libvirt autostart
-
-```bash
-virsh --connect qemu:///system net-list --all
-# isolated        active  yes
-# vagrant-libvirt active  yes
+# Depuis SOC
+tail -f /var/log/remote/OPNsense.internal.log
+# 2026-05-11T22:17:16+00:00 OPNsense.internal filterlog[56373]: ...
 ```
 
 Résultat : **GO** ✓
 
+### Snapshots
+
+```bash
+virsh --connect qemu:///system snapshot-list --domain infrastructure_soc
+virsh --connect qemu:///system snapshot-list --domain debian12
+virsh --connect qemu:///system snapshot-list --domain Kali
+virsh --connect qemu:///system snapshot-list --domain Opnsense
+# post-semaine1 présent sur les 4 VMs
+```
+
+Résultat : **4/4 GO** ✓
+
 ---
 
-## Points d'attention pour la semaine 2
+## Pourquoi chrony sur toutes les VMs
 
-1. **Configurer syslog OPNsense → SOC** via l'interface web.
-   Requis pour S2 (scan réseau détecté côté firewall).
+Le moteur de corrélation mesure des fenêtres temporelles précises :
+- S1 : fenêtre de 60 secondes pour les échecs SSH
+- S2 : fenêtre de 30 secondes pour le scan réseau
 
-2. **Snapshot SOC** avant le début du développement moteur (semaine 4).
+Une dérive de 5 secondes sur 60 secondes = 8% d'erreur → faux négatifs.
 
-3. **chrony sur target** — vérifier la synchronisation NTP avant génération des logs
-   d'évaluation (semaine 3).
+OPNsense synchronise via ntpd intégré (service non exposé via `rc.d` standard —
+vérification indirecte : paquets UDP port 123 visibles dans filterlog).
 
 ---
 
 ## Décisions documentées
 
-Voir `decisions.md` — entrées S1-D1 à S1-D5.
+Voir `decisions.md` — entrées S1-D1 à S1-D7.
