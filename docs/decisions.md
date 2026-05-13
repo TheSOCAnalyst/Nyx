@@ -122,7 +122,7 @@ Vagrant conservé avec le plugin `vagrant-libvirt`.
 
 ---
 
-## Semaine 1 — Déploiement du laboratoire (18–28 avril 2026)
+## Semaine 1 — Déploiement du laboratoire (18 avril – 11 mai 2026)
 
 ### S1-D1 — Abandon de Vagrant pour target, OPNsense et Kali : création manuelle via virt-manager
 
@@ -137,27 +137,21 @@ non rentable pour ce projet solo :
 1. **Box `generic/debian12` : sélection d'architecture incorrecte.**
    vagrant-libvirt 0.11.2 + Vagrant 2.3.4 télécharge systématiquement la variante
    `ppc64le` au lieu d'`amd64` pour les boxes `generic/*` sur Fedora x86_64.
-   Contournement possible via `box_url` explicite, mais fragile à chaque mise à jour de box.
 
 2. **Connexion libvirt : session vs system.**
    vagrant-libvirt utilise `qemu:///session` par défaut. Les opérations réseau
-   (création de bridges) nécessitent `qemu:///system`. Sans `libvirt.uri = "qemu:///system"`
-   explicite dans chaque bloc provider, les réseaux ne peuvent pas être créés.
-   Ce paramètre n'est pas documenté clairement pour Fedora dans vagrant-libvirt 0.11.2.
+   nécessitent `qemu:///system`. Sans `libvirt.uri = "qemu:///system"` explicite,
+   les réseaux ne peuvent pas être créés.
 
 3. **NFS échoue sur Fedora par défaut.**
-   vagrant-libvirt utilise NFS pour `/vagrant`. `nfs-server` est inactif sur Fedora
-   par défaut. Contournement : `type: "rsync"`, mais ajoute de la fragilité.
+   vagrant-libvirt utilise NFS pour `/vagrant`. `nfs-server` inactif sur Fedora.
+   Contournement : `type: "rsync"`, mais ajoute de la fragilité.
 
 **Conséquence acceptée** : Perte de reproductibilité automatique pour 3 VMs sur 4.
-Acceptable pour un projet solo de 10 semaines avec une topologie fixe :
-les VMs ne seront pas recréées sauf incident majeur (snapshot disponible pour OPNsense).
+Acceptable pour un projet solo de 10 semaines avec une topologie fixe.
 
 **Ce que le Vagrantfile conserve** : Documentation de l'allocation RAM, des IPs cibles,
 et des scripts de provisioning — valeur de référence pour une éventuelle reconstruction.
-
-**Scripts de provisioning** : `soc.sh` et `target.sh` restent valides. Pour target,
-les commandes ont été exécutées manuellement via SSH après installation Debian.
 
 ---
 
@@ -171,19 +165,17 @@ et non dans `rsyslog.conf`.
 
 **Sous-problème A — Ordre de chargement** :
 rsyslog charge `rsyslog.conf` puis inclut `rsyslog.d/*.conf` par ordre alphanumérique.
-`50-default.conf` (règles système) était traité avant la règle `RemoteLogs` définie
-dans `rsyslog.conf`. Les messages distants étaient consommés par `50-default.conf`
-sans atteindre `RemoteLogs`. Solution : fichier `10-remote.conf` (chargé avant `50-default.conf`).
+`50-default.conf` consommait les messages distants avant `RemoteLogs`.
+Solution : fichier `10-remote.conf` (chargé avant `50-default.conf`).
 
 **Sous-problème B — Dépendance de template** :
 Un template rsyslog doit être défini avant son premier usage dans l'ordre de chargement.
-Mettre le template dans `rsyslog.conf` et la règle dans `10-remote.conf` crée une
-référence avant définition. Solution : template et règle dans le même fichier.
+Solution : template et règle dans le même fichier.
 
 **Sous-problème C — Permissions** :
-`/var/log/remote/` créé par `soc.sh` avec `mkdir -p` (propriétaire `root:root`).
-rsyslog tourne sous l'utilisateur `syslog` (groupe `adm`) — écriture refusée.
-Solution : `chown -R syslog:adm /var/log/remote/`.
+`/var/log/remote/` créé par `soc.sh` avec propriétaire `root:root`.
+rsyslog tourne sous `syslog:adm` — écriture refusée.
+Solution : `chown syslog:adm /var/log/remote/` + `chmod 755 /var/log/remote/`.
 
 **Config finale** (`/etc/rsyslog.d/10-remote.conf`) :
 ```
@@ -192,17 +184,6 @@ if $fromhost-ip startswith '10.0.1.' then ?RemoteLogs
 & stop
 ```
 
-**Correction apportée à `soc.sh`** : Ajouter après `mkdir -p /var/log/remote/` :
-```bash
-chown syslog:adm /var/log/remote/
-chmod 755 /var/log/remote/
-```
-
-**Références rsyslog** :
-- Architecture et flux : https://www.rsyslog.com/doc/master/configuration/index.html
-- Ordre de traitement des règles : https://www.rsyslog.com/doc/master/configuration/actions.html
-- Templates dynamiques : https://www.rsyslog.com/doc/master/configuration/templates.html
-
 ---
 
 ### S1-D3 — RAM target maintenue à 1 Go malgré l'ajout de Samba
@@ -210,17 +191,11 @@ chmod 755 /var/log/remote/
 **Décision** : La VM target reste à 1 Go RAM. Aucune modification des specs.
 
 **Justification** :
-- La target est une cible passive : elle reçoit des attaques et génère des logs.
-  Elle n'a pas de charge applicative significative.
 - Samba au repos sur un lab solo (3-4 connexions max) consomme 30-60 Mo.
-- Le swap observé (195 Mo) est lié au démarrage du système et à l'interface
-  SPICE — pas à une saturation fonctionnelle.
-- Augmenter la RAM allouerait des ressources que la target n'exploitera jamais.
-  Le budget RAM global (6,5 Go phases 1-7) n'a pas de marge justifiant ce
-  changement.
+- Le swap observé (195 Mo) est lié au démarrage et à l'interface SPICE —
+  pas à une saturation fonctionnelle.
 
 **Conséquence acceptée** : La VM peut rester en swap léger au repos.
-Acceptable pour une cible de lab à topologie fixe.
 
 ---
 
@@ -228,34 +203,23 @@ Acceptable pour une cible de lab à topologie fixe.
 
 **Décision** : Le scénario S2 (reconnaissance + exfiltration) est redéfini avec
 SMB comme vecteur d'exfiltration explicite. Samba est déployé sur la target Debian
-(configuration simplifiée : 2 partages, 4 utilisateurs).
+(configuration simplifiée : 2 partages privés + 1 commun, 4 utilisateurs).
 
 **Chaîne d'attaque S2** :
-
+```
 Kali → nmap scan réseau
-→ CrackMapExec brute-force SMB sur target (10.0.1.20:445)
-→ accès au partage Samba
-→ smbclient get fichiers (exfiltration)
+     → CrackMapExec brute-force SMB sur target (10.0.1.20:445)
+     → accès au partage Samba
+     → smbclient get fichiers (exfiltration)
+```
 
 **Justification** :
 - Cohérence avec le contexte PME togolaise : Samba est la solution de partage
   de fichiers de référence dans ce type d'environnement.
-- Le projet SambaPME (KPODONOU & GNIGMA, INF 1527, 2025-2026) démontre
-  exactement cette chaîne d'attaque sur une infrastructure identique — réutilisation
-  directe des scénarios validés (Hydra, CrackMapExec, smbclient).
-- S2 dispose ainsi de trois sources de logs distinctes pour la corrélation :
-  OPNsense (scan), target auth/authpriv (échecs SMB), target syslog (accès
-  partages).
-- Le vecteur SSH/SCP écarté : trop proche de S1, ne génère pas de signal
-  réseau exploitable par OPNsense.
+- S2 dispose de trois sources de logs distinctes pour la corrélation :
+  OPNsense (scan), target auth/authpriv (échecs SMB), target daemon (accès partages).
 
-**Impact pipeline syslog** : extension de `/etc/rsyslog.d/50-forward.conf`
-sur target pour transmettre la facility `syslog` en plus de `auth,authpriv` :
-
-auth,authpriv.*  @10.0.1.10:514
-syslog.*         @10.0.1.10:514
-
-**Décision permanente** : ajoutée au tableau des décisions figées (P-D1 étendue).
+**Impact pipeline syslog** : extension de `50-forward.conf` avec `daemon.*`.
 
 ---
 
@@ -265,44 +229,108 @@ syslog.*         @10.0.1.10:514
 `daemon.*` dans `50-forward.conf`. La facility `syslog.*` ne suffit pas.
 
 **Justification** :
+Samba (`smbd`) émet ses messages via `openlog(LOG_DAEMON)` — hardcodé dans le
+source C. `syslog.*` capture les messages internes de rsyslog lui-même, pas les
+démons système.
 
-Samba (`smbd`) émet ses messages via l'API syslog C avec la constante `LOG_DAEMON`
-— c'est hardcodé dans le source de Samba, indépendant de `smb.conf`. La facility
-`daemon` est la catégorie standard pour les services système génériques sous Linux.
-
-La facility `syslog` capture les messages internes de rsyslog lui-même, pas les
-messages des démons système. Ajouter `syslog.*` dans `50-forward.conf` sans
-`daemon.*` laisse donc les logs smbd invisibles pour le SOC malgré `logging = syslog`
-dans `smb.conf`.
-
-Flux complet après correction :
-```
-smbd → syslog(LOG_DAEMON, ...) → kernel → rsyslog
-     → 50-forward.conf : daemon.* → UDP 514 → SOC
-```
-
-**Symptôme diagnostique** : logs visibles dans `/var/log/syslog` sur target
-(capturés par `50-default.conf : *.*`) mais absents de `/var/log/remote/debian.log`
-sur le SOC.
-
-**Méthode de diagnostic générale** :
-1. Vérifier `/var/log/syslog` sur la source — si le message y est, rsyslog le reçoit
-2. Identifier la facility : `grep <service> /var/log/syslog` et lire le prefixe
-3. Ajouter la facility manquante dans `50-forward.conf`
-
-**Config `50-forward.conf` finale sur target** :
+**Config `50-forward.conf` finale** :
 ```
 auth,authpriv.*  @10.0.1.10:514   # SSH, PAM, sudo
 syslog.*         @10.0.1.10:514   # Messages internes rsyslog
 daemon.*         @10.0.1.10:514   # Samba (smbd, nmbd) et autres démons
 ```
 
-**Règle générale pour un lab SOC** : transmettre `auth,authpriv.*` + `daemon.*`
-+ `kern.*` couvre 90% des événements de sécurité pertinents. `kern.*` sera ajouté
-si OPNsense ou des événements kernel deviennent nécessaires.
+**Règle générale** : `auth,authpriv.*` + `daemon.*` + `kern.*` couvre 90% des
+événements de sécurité pertinents pour un lab SOC.
 
 ---
 
+### S1-D6 — IP Kali fixée en statique 10.0.1.50 sur eth1
+
+**Décision** : L'interface `eth1` de la VM Kali est configurée en statique
+à `10.0.1.50/24` (réseau `isolated`). L'interface `eth0` reste en DHCP sur
+le réseau management (`vagrant-libvirt`, 192.168.121.0/24).
+
+**Justification** :
+- L'IP initiale après installation était `10.0.1.190` (bail DHCP du réseau isolated).
+- L'adresse `10.0.1.50` est l'IP cible définie dès S0 pour la machine attaquante.
+- Une IP statique évite que l'adresse source des attaques change entre sessions,
+  ce qui invaliderait les règles de corrélation basées sur l'IP.
+- P-D8 référence `10.0.1.50` comme IP Kali — la correction aligne la réalité
+  sur la documentation.
+
+**Config `/etc/network/interfaces` sur Kali** :
+```
+auto eth1
+iface eth1 inet static
+    address 10.0.1.50
+    netmask 255.255.255.0
+```
+
+**Validation** :
+```
+eth1: inet 10.0.1.50/24 scope global eth1 (valid_lft forever)
+```
+
+---
+
+### S1-D7 — OPNsense : réinstallation depuis ISO DVD sur disque qcow2 dédié
+
+**Décision** : La VM OPNsense est recréée from scratch avec un disque qcow2
+de 8 Go dédié, à partir de l'ISO DVD `OPNsense-26.1.6-dvd-amd64.iso`.
+La version passe de 26.1.2 (plan initial) à 26.1.6 (dernière disponible).
+Partition scheme : **MBR** (DOS Partitions).
+
+**Justification** — séquence d'échecs ayant conduit à cette décision :
+
+1. **Image VGA live sans disque dédié** : la VM originale pointait sur
+   `OPNsense-26.1.2-vga-amd64.post-install-base` comme seul disque, avec
+   backing store sur l'`.img` original. OPNsense tournait en live media —
+   toute configuration disparaissait au reboot.
+
+2. **Ajout de disque à chaud non fonctionnel** : l'attachement d'un qcow2
+   de 8 Go via `virsh attach-disk` pendant que la VM tournait provoquait
+   `Partition destroy failed` dans l'installateur VGA — le kernel FreeBSD
+   ne voit pas proprement un disque attaché à chaud pour le partitionnement.
+
+3. **Image VGA incompatible avec l'installation** : même après redémarrage
+   avec le disque attaché via XML, l'installateur VGA refusait de partitionner
+   (`Partition destroy failed` persistant). Cause probable : l'image VGA est
+   conçue pour être copiée, pas pour servir d'installateur avec disque cible séparé.
+
+4. **ISO DVD + MBR = solution propre** : l'ISO DVD contient le bsdinstall
+   standard FreeBSD. Avec un disque qcow2 vierge comme seul disque cible,
+   l'installation s'est déroulée sans erreur. GPT avait été tenté d'abord et
+   échoué (incompatibilité SeaBIOS/BIOS legacy) — MBR fonctionne correctement.
+
+**Procédure de recréation** :
+```bash
+# Suppression ancienne VM
+virsh --connect qemu:///system snapshot-delete Firewall --snapshotname post-install-base
+sudo rm /var/lib/libvirt/images/opnsense.qcow2
+virsh --connect qemu:///system undefine Firewall --remove-all-storage
+
+# Création disque vierge
+qemu-img create -f qcow2 /var/lib/libvirt/images/opnsense.qcow2 8G
+
+# Création VM dans virt-manager :
+# ISO : OPNsense-26.1.6-dvd-amd64.iso (CDROM)
+# Disque : opnsense.qcow2 8 Go (VirtIO)
+# RAM : 1024 Mo, CPU : 1
+# NIC1 (vtnet0) : isolated → LAN
+# NIC2 (vtnet1) : default (NAT) → WAN
+# Partition scheme : MBR
+
+# Post-install : déconnecter l'ISO, booter sur disque
+# Console option 2 : LAN → 10.0.1.1/24
+```
+
+**Nom VM dans libvirt** : `Opnsense` (majuscule O, sans tiret).
+
+**Conséquence** : le snapshot `post-install-base` mentionné en S0-D3 n'existe
+plus — remplacé par le snapshot `post-semaine1` créé après configuration complète.
+
+---
 
 ## Décisions permanentes (scope — toutes semaines)
 
@@ -310,7 +338,7 @@ Ces décisions sont figées pour la durée du projet.
 
 | Réf. | Décision | Statut |
 |------|----------|--------|
-| P-D1 | 2 scénarios uniquement : S1 brute-force SSH, S2 scan+exfiltration | Figé |
+| P-D1 | 2 scénarios uniquement : S1 brute-force SSH, S2 scan+exfiltration SMB | Figé |
 | P-D2 | Réponse automatisée hors scope principal | Figé |
 | P-D3 | Backend d'états : dict Python + persistence JSON (`StateStore`) — Redis écarté | Figé |
 | P-D4 | Règles de corrélation externalisées en YAML (`engine/rules/`) | Figé |
@@ -324,18 +352,14 @@ Ces décisions sont figées pour la durée du projet.
 segment L2 (bridge virbr2). Le trafic inter-VMs ne traverse pas OPNsense.
 
 **Impact par scénario** :
-- S1 (brute-force SSH) : aucun impact. Détection HIDS via logs auth de
-  target. OPNsense n'était pas dans la chaîne de détection prévue.
-- S2 (scan + exfiltration) : impact partiel. OPNsense ne voit pas le
-  trafic SMB entre Kali et target. Il voit les paquets nmap adressés
-  à 10.0.1.1 (lui-même) pendant le scan — suffisant pour un log de
-  reconnaissance.
+- S1 (brute-force SSH) : aucun impact. Détection HIDS via logs auth de target.
+- S2 (scan + exfiltration) : impact partiel. OPNsense ne voit pas le trafic
+  SMB entre Kali et target. Il voit les paquets nmap adressés à 10.0.1.1
+  (lui-même) pendant le scan — suffisant pour un log de reconnaissance.
 
-**Décision** : topologie maintenue. La détection S1 est HIDS par
-conception. La détection S2 combine logs OPNsense (scan) + logs
-Samba sur target (brute-force SMB + exfiltration). Ce modèle est
-documenté comme limite de lab dans le rapport.
+**Décision** : topologie maintenue. Documentée comme limite de lab dans le rapport.
 
-**Pour une version future** : placer Kali sur un segment séparé
-(10.0.2.0/24) avec routage via OPNsense pour une visibilité complète
-du trafic Est-Ouest.
+**Pour une version future** : placer Kali sur un segment séparé (10.0.2.0/24)
+avec routage via OPNsense pour une visibilité complète du trafic Est-Ouest.
+
+**Constat** : -- soc.sh place RemoteLogs dans rsyslog.conf au lieu de 10-remote.conf — écart documenté en S1-D2, script à aligner si reconstruction nécessaire.--
